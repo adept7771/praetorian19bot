@@ -1,3 +1,4 @@
+import commands.Commands;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -22,14 +23,41 @@ public class Bot extends TelegramLongPollingBot {
                 if( messageContainsBotName || (replyMessage != null &&
                         update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername()))
                 ){
-                    SendMessage message = new SendMessage() // Create a message object object
-                            .setChatId(chat_id)
-                            .setReplyToMessageId(update.getMessage().getMessageId())
-                            .setText("Меня указали либо в директ сообщении, либо в реплае. Тебе заняться больше не чем?");
-                    try {
-                        execute(message); // Sending our message object to user
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+
+                    if (message_text.contains("/help")) { // Print all messages in ONE message
+                        String helpText = "";
+                        for (Commands commands : Commands.values()) {
+                            helpText = helpText + "/" + commands.name() + " ---> " + commands.value + " \n\n";
+                        }
+
+                        SendMessage message = new SendMessage() // Create a message object object
+                                .setChatId(chat_id)
+                                .setReplyToMessageId(update.getMessage().getMessageId())
+                                .setText(helpText);
+                        try {
+                            execute(message); // Sending our message object to user
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (message_text.contains("/")) { // Print special help text for defined command
+                        String helpText = "";
+
+                        for (Commands commands : Commands.values()) {
+                            if (message_text.contains(commands.name())) {
+                                helpText = commands.value;
+                            }
+                        }
+
+                        SendMessage message = new SendMessage() // Create a message object object
+                                .setChatId(chat_id)
+                                .setReplyToMessageId(update.getMessage().getMessageId())
+                                .setText(helpText);
+                        try {
+                            execute(message); // Sending our message object to user
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 }
             }
