@@ -4,7 +4,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.HashMap;
 
-public class Main {
+public class MainInit {
 
     static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<Integer, Integer>();
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<Integer, Long>();

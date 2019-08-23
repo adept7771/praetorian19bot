@@ -8,6 +8,7 @@
     <groupId>praetorian19</groupId>
     <artifactId>praetorian19</artifactId>
     <version>1.0</version>
+    <packaging>jar</packaging>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots -->
@@ -46,4 +47,39 @@
         </dependency>
 
     </dependencies>
+
+    <properties>
+        <jdk.version>1.8</jdk.version>
+    </properties>
+
+    <build>
+        <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        com.praetorian19.MainInit
+                                    </mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

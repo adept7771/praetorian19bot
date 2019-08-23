@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,27 +50,27 @@ public class Bot extends TelegramLongPollingBot {
             User leftChatMember = update.getMessage().getLeftChatMember();
             if (!leftChatMember.getBot()) {
                 int leftUserId = leftChatMember.getId();
-                if (Main.newbieMapWithAnswer.containsKey(leftUserId)) {
+                if (MainInit.newbieMapWithAnswer.containsKey(leftUserId)) {
                     System.out.println("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
-                    Main.newbieMapWithAnswer.remove(leftUserId);
-                    Main.newbieMapWithJoinTime.remove(leftUserId);
-                    Main.newbieMapWithChatId.remove(leftUserId);
-                    System.out.println("Newbie list size: " + +Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                    MainInit.newbieMapWithAnswer.remove(leftUserId);
+                    MainInit.newbieMapWithJoinTime.remove(leftUserId);
+                    MainInit.newbieMapWithChatId.remove(leftUserId);
+                    System.out.println("Newbie list size: " + +MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
                 }
             }
         }
 
         // Periodic task to check users who doesn't say everything
 
-        System.out.println("Current newbie lists size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+        System.out.println("Current newbie lists size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
-        for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) Main.newbieMapWithAnswer.entrySet()) {
+        for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) MainInit.newbieMapWithAnswer.entrySet()) {
 
             System.out.println("Iterating newbie lists.");
 
             Integer userIdFromMain = pair.getKey();
-            Long joinTimeFromMain = Main.newbieMapWithJoinTime.get(userIdFromMain);
-            Long chatIdFromMain = Main.newbieMapWithChatId.get(userIdFromMain);
+            Long joinTimeFromMain = MainInit.newbieMapWithJoinTime.get(userIdFromMain);
+            Long chatIdFromMain = MainInit.newbieMapWithChatId.get(userIdFromMain);
 
             System.out.println("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMain + " || Difference: " + (currentDateTime - joinTimeFromMain));
 
@@ -87,11 +86,11 @@ public class Bot extends TelegramLongPollingBot {
                     e.printStackTrace();
                 }
 
-                Main.newbieMapWithAnswer.remove(userIdFromMain);
-                Main.newbieMapWithJoinTime.remove(userIdFromMain);
-                Main.newbieMapWithChatId.remove(userIdFromMain);
+                MainInit.newbieMapWithAnswer.remove(userIdFromMain);
+                MainInit.newbieMapWithJoinTime.remove(userIdFromMain);
+                MainInit.newbieMapWithChatId.remove(userIdFromMain);
 
-                System.out.println("Silent user removed. Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                System.out.println("Silent user removed. Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                 SendMessage message = new SendMessage()
                         .setChatId(chatIdFromMain)
@@ -120,11 +119,11 @@ public class Bot extends TelegramLongPollingBot {
                     int answerDigit = messageId + randomDigit;
                     String helloText = "Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have 5 minutes. How much will be " + messageId + " + " + randomDigit;
 
-                    Main.newbieMapWithAnswer.put(userId, answerDigit);
-                    Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
-                    Main.newbieMapWithChatId.put(userId, chatId);
+                    MainInit.newbieMapWithAnswer.put(userId, answerDigit);
+                    MainInit.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
+                    MainInit.newbieMapWithChatId.put(userId, chatId);
 
-                    System.out.println("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                     SendMessage message = new SendMessage() // Create a message object object
                             .setChatId(update.getMessage().getChatId())
@@ -221,12 +220,12 @@ public class Bot extends TelegramLongPollingBot {
                 }
 
                 // Check if user send CODE to unblock and if user is in newbie block list ---------------------->
-                else if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
+                else if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
 
                     System.out.println("User which posted message is NEWBIE. Check initialising.");
 
                     Integer newbieId = update.getMessage().getFrom().getId();
-                    Integer generatedNewbieAnswerDigit = Main.newbieMapWithAnswer.get(newbieId);
+                    Integer generatedNewbieAnswerDigit = MainInit.newbieMapWithAnswer.get(newbieId);
                     Integer currentNewbieAnswer = 0;
                     try { // try to normalize string
                         String tmpNewbieAnswer = messageText.replaceAll("\\s", "");
@@ -249,11 +248,11 @@ public class Bot extends TelegramLongPollingBot {
 
                         if (currentNewbieAnswer.equals(generatedNewbieAnswerDigit)) {
 
-                            Main.newbieMapWithAnswer.remove(newbieId);
-                            Main.newbieMapWithJoinTime.remove(newbieId);
-                            Main.newbieMapWithChatId.remove(newbieId);
+                            MainInit.newbieMapWithAnswer.remove(newbieId);
+                            MainInit.newbieMapWithJoinTime.remove(newbieId);
+                            MainInit.newbieMapWithChatId.remove(newbieId);
 
-                            System.out.println("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                            System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                             answerText += "Right! Now you can send messages to group. Have a nice chatting.";
 
@@ -269,11 +268,11 @@ public class Bot extends TelegramLongPollingBot {
 
                         } else {
 
-                            Main.newbieMapWithAnswer.remove(newbieId);
-                            Main.newbieMapWithJoinTime.remove(newbieId);
-                            Main.newbieMapWithChatId.remove(newbieId);
+                            MainInit.newbieMapWithAnswer.remove(newbieId);
+                            MainInit.newbieMapWithJoinTime.remove(newbieId);
+                            MainInit.newbieMapWithChatId.remove(newbieId);
 
-                            System.out.println("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                            System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                             answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
 
@@ -322,11 +321,11 @@ public class Bot extends TelegramLongPollingBot {
 
                         int userId = update.getMessage().getFrom().getId();
 
-                        Main.newbieMapWithAnswer.remove(userId);
-                        Main.newbieMapWithJoinTime.remove(userId);
-                        Main.newbieMapWithChatId.remove(userId);
+                        MainInit.newbieMapWithAnswer.remove(userId);
+                        MainInit.newbieMapWithJoinTime.remove(userId);
+                        MainInit.newbieMapWithChatId.remove(userId);
 
-                        System.out.println("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                        System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                         answerText += "Wrong. Sorry entered DATA contains only letters. You will be banned!";
 
@@ -372,7 +371,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 }
             } else { // If we have an update with message from user in newbie block list. Delete it and ban motherfucker.
-                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
+                if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
                     System.out.println("Message from user is not posted for praetorian. It should be deleted and banned.");
 
                     int userId = update.getMessage().getFrom().getId();
@@ -380,11 +379,11 @@ public class Bot extends TelegramLongPollingBot {
                     DeleteMessage deleteMessage = new DeleteMessage();
                     deleteMessage.setChatId(chatId).setMessageId(messageId);
 
-                    Main.newbieMapWithAnswer.remove(userId);
-                    Main.newbieMapWithJoinTime.remove(userId);
-                    Main.newbieMapWithChatId.remove(userId);
+                    MainInit.newbieMapWithAnswer.remove(userId);
+                    MainInit.newbieMapWithJoinTime.remove(userId);
+                    MainInit.newbieMapWithChatId.remove(userId);
 
-                    System.out.println("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                     try {
                         execute(deleteMessage);
