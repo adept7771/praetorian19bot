@@ -24,7 +24,6 @@ public class Bot extends TelegramLongPollingBot {
         String regex = "(.)*(\\d)(.)*"; // for check digits in answer
         long currentDateTime = (new Date().getTime()) / 1000;
         Pattern pattern = Pattern.compile(regex);
-
         long chatId = update.getMessage().getChatId();
         boolean isUpdateFromBot = false;
         boolean isUpdateContainsReply = false;
@@ -44,6 +43,7 @@ public class Bot extends TelegramLongPollingBot {
         } catch (Exception e) {
             isUpdateFromBot = false;
         }
+
 
         // LEAVE MEMBERS update handling we must remove it from newbies list if user from it
 
@@ -148,7 +148,7 @@ public class Bot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             Integer messageId = update.getMessage().getMessageId();
 
-            // is it reply?
+            // is it reply message contains bot name?
 
             boolean replyMessageContainsBotName = false;
 
@@ -163,22 +163,33 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }
 
-            // if it direct, check that message contains bot name
+            // if it direct message in chat, check that message contains bot name
 
-            boolean directMessageContainsBotName = false;
+            boolean messageInChatContainsBotName = false;
             try {
-                directMessageContainsBotName = messageText.contains("@" + getBotUsername());
+                messageInChatContainsBotName = messageText.contains("@" + getBotUsername());
             } catch (NullPointerException e) {
-                directMessageContainsBotName = false;
+                messageInChatContainsBotName = false;
             } finally {
                 if (replyMessage == null) {
-                    System.out.println("Direct message contains praetorian bot name: " + directMessageContainsBotName);
+                    System.out.println("Direct message contains praetorian bot name: " + messageInChatContainsBotName);
                 }
             }
 
+            // if it personal message in personal direct chat
+
+            boolean isUpdateContainsDirectMessageToBot = false;
+            try {
+                if (update.getMessage().getChat().isUserChat()){
+                    isUpdateContainsDirectMessageToBot = true;
+                    System.out.println("Update is private message to bot.");
+                };
+            } catch (Exception e) {
+                isUpdateContainsDirectMessageToBot = false;
+            }
             // ------------- CHECK MENTIONS IN DIRECT MESSAGE OR IN REPLY
 
-            if (directMessageContainsBotName || replyMessageContainsBotName) {
+            if (messageInChatContainsBotName || replyMessageContainsBotName || isUpdateContainsDirectMessageToBot) {
 
                 // COMMANDS HANDLING -------------------------------->
 
@@ -224,7 +235,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
 
                 // Check if user send CODE to unblock and if user is in newbie block list ---------------------->
-                else if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
+                else if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) && !isUpdateContainsDirectMessageToBot) {
 
                     System.out.println("User which posted message is NEWBIE. Check initialising.");
 
@@ -243,7 +254,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     String answerText = "";
 
-                    System.out.println("Normalized newbie anser is: " + currentNewbieAnswer);
+                    System.out.println("Normalized newbie answer is: " + currentNewbieAnswer);
 
                     Matcher matcher = pattern.matcher(messageText); // contain at least digits
 
@@ -375,7 +386,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 }
             } else { // If we have an update with message from user in newbie block list. Delete it and ban motherfucker.
-                if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId())) {
+                if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) && !isUpdateContainsDirectMessageToBot) {
                     System.out.println("Message from user is not posted for praetorian. It should be deleted and banned.");
 
                     int userId = update.getMessage().getFrom().getId();
