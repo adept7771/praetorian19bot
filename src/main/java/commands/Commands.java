@@ -3,10 +3,10 @@ package commands;
 public enum Commands {
 
     help("Hi there! Look down to command list:"),
-    aboutBot("This bot created for auto moderate new group members for protect your chat from bots. " +
+    about("This bot created for auto moderate new group members for protect your chat from bots. " +
             "If newbie will appear in chat bot will " +
             "contact with him and ask few questions. If new member will answer it right - bot will give him send message rights." +
-            " Also silent members who not write any messages in short period should be removed by bot." +
+            " Also silent members who not wrote any messages in short period after joining to chat should be removed by bot." +
             " \n\n >>>>>>>>> ATTENTION: you must give to bot all admin rights"),
 //    shomaBratishka("В НАТУРЕ ЛЕЕЕЕЕЕ БРАТИШКА ЕЖЖИ"),
 //    mishkaHohol("Хохольский хохол хохлился и в коде копошился. Раз раз раз"),

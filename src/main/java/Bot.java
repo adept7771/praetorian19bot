@@ -164,58 +164,61 @@ public class Bot extends TelegramLongPollingBot {
 
             // if it direct, check that message contains bot name
 
-            boolean direcMessageContainsBotName = false;
+            boolean directMessageContainsBotName = false;
             try {
-                direcMessageContainsBotName = messageText.contains("@" + getBotUsername());
+                directMessageContainsBotName = messageText.contains("@" + getBotUsername());
             } catch (NullPointerException e) {
-                direcMessageContainsBotName = false;
+                directMessageContainsBotName = false;
             } finally {
                 if (replyMessage == null) {
-                    System.out.println("Direct message contains praetorian bot name: " + direcMessageContainsBotName);
+                    System.out.println("Direct message contains praetorian bot name: " + directMessageContainsBotName);
                 }
             }
 
             // ------------- CHECK MENTIONS IN DIRECT MESSAGE OR IN REPLY
 
-            if (direcMessageContainsBotName || replyMessageContainsBotName) {
+            if (directMessageContainsBotName || replyMessageContainsBotName) {
 
-                // HELP commands handling -------------------------------->
+                // COMMANDS HANDLING -------------------------------->
 
-                if (messageText.equals("/help")) { // Print all messages in ONE message
-                    String helpText = "";
-                    for (Commands commands : Commands.values()) {
-                        helpText = helpText + "/" + commands.name() + " ---> " + commands.value + " \n\n";
-                    }
+                if (messageText.contains("/")){
+                    if (messageText.contains("/help")) { // Print all messages in ONE message
+                        System.out.println("Message text contains /help - show commands list");
+                        StringBuilder helpText = new StringBuilder();
+                        for (Commands commands : Commands.values()) {
+                            helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
+                        }
 
-                    SendMessage message = new SendMessage() // Create a message object object
-                            .setChatId(chatId)
-                            .setReplyToMessageId(messageId)
-                            .setText(helpText);
-                    try {
-                        execute(message); // Sending our message object to user
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Print special help text for defined command
-                } else if (messageText.contains("/")) {
-
-                    String helpText = "";
-
-                    for (Commands commands : Commands.values()) {
-                        if (messageText.contains(commands.name())) {
-                            helpText = commands.value;
+                        SendMessage message = new SendMessage() // Create a message object object
+                                .setChatId(chatId)
+                                .setReplyToMessageId(messageId)
+                                .setText(helpText.toString());
+                        try {
+                            execute(message); // Sending our message object to user
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
                         }
                     }
+                    else {
+                        System.out.println("Message text contains / - it's a command");
+                        String helpText = "";
 
-                    SendMessage message = new SendMessage()
-                            .setChatId(chatId)
-                            .setReplyToMessageId(messageId)
-                            .setText(helpText);
-                    try {
-                        execute(message);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                        for (Commands commands : Commands.values()) {
+                            if (messageText.contains(commands.name())) {
+                                System.out.println("Message test contains - command name: " + commands.name());
+                                helpText = commands.value;
+                            }
+                        }
+
+                        SendMessage message = new SendMessage()
+                                .setChatId(chatId)
+                                .setReplyToMessageId(messageId)
+                                .setText(helpText);
+                        try {
+                            execute(message);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
