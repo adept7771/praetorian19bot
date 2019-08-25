@@ -172,7 +172,7 @@ public class Bot extends TelegramLongPollingBot {
                 messageInChatContainsBotName = false;
             } finally {
                 if (replyMessage == null) {
-                    System.out.println("Direct message contains praetorian bot name: " + messageInChatContainsBotName);
+                    System.out.println("Chat message contains praetorian bot name: " + messageInChatContainsBotName);
                 }
             }
 
