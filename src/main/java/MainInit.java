@@ -6,10 +6,14 @@ import java.util.HashMap;
 
 public class MainInit {
 
+    static boolean mode = true; // true - production, false - test
+    SettingsHandler settingsHandler = new SettingsHandler();
+
     static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<Integer, Integer>();
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<Integer, Long>();
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<Integer, Long>();
-    static boolean mode = false; // true - production, false - test
+
+
 
     public static void main(String[] args) {
         // Initialize Api Context

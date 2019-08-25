@@ -117,7 +117,7 @@ public class Bot extends TelegramLongPollingBot {
 
                     int userId = user.getId();
                     int randomDigit = (int) (Math.random() * 100);
-                    int answerDigit = messageId + randomDigit;
+                    int answerDigit = randomDigit + randomDigit;
                     String helloText = "Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have 5 minutes. How much will be " + messageId + " + " + randomDigit;
 
                     MainInit.newbieMapWithAnswer.put(userId, answerDigit);
