@@ -1,3 +1,4 @@
+import additional.Settings;
 import commands.Commands;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
@@ -419,13 +420,22 @@ public class Bot extends TelegramLongPollingBot {
 
     public String getBotUsername() {
         // Return bot username
-        // If bot username is @MyAmazingBot, it must return 'MyAmazingBot'
-        return "Praetorian19bot";
+        if(MainInit.mode){
+            return Settings.botName;
+        }
+        else {
+            return Settings.testBotName;
+        }
     }
 
     @Override
     public String getBotToken() {
         // Return bot token from BotFather
-        return "868108811:AAFEBVlByhnZhYs0heohMiN0bsqDM_nn6IM";
+        if(MainInit.mode){
+            return Settings.botKeyToken;
+        }
+        else {
+            return Settings.testBotKeyToken;
+        }
     }
 }
