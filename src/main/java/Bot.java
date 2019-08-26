@@ -1,5 +1,4 @@
-import additional.Settings;
-import commands.Commands;
+import commands.CommandsEn;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -197,7 +196,7 @@ public class Bot extends TelegramLongPollingBot {
                     if (messageText.contains("/help")) { // Print all messages in ONE message
                         System.out.println("Message text contains /help - show commands list");
                         StringBuilder helpText = new StringBuilder();
-                        for (Commands commands : Commands.values()) {
+                        for (CommandsEn commands : CommandsEn.values()) {
                             helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
                         }
 
@@ -215,7 +214,7 @@ public class Bot extends TelegramLongPollingBot {
                         System.out.println("Message text contains / - it's a command");
                         String helpText = "";
 
-                        for (Commands commands : Commands.values()) {
+                        for (CommandsEn commands : CommandsEn.values()) {
                             if (messageText.contains(commands.name())) {
                                 System.out.println("Message test contains - command name: " + commands.name());
                                 helpText = commands.value;

@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-class SettingsHandler {
+class UserSettingsHandler {
 
     private static File settingsFile = new File(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
     public static long lastSettingsSavedTime;
@@ -19,15 +19,15 @@ class SettingsHandler {
 
             System.out.println("List of parameters from settings file is not empty! Initialising in memory.");
 
-            MainInit.globalSettingForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
+            MainInit.userSettingForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
             System.out.println("Parsed Map with settings from file stored to memory successful");
-            SettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
+            UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
 
         } else { // if file with setting is empty
 
             System.out.println("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
-            SettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
+            UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
         }
 
 //        //Создаем поток-чтения-байт-из-файла
@@ -66,7 +66,7 @@ class SettingsHandler {
             HashMap<String, String> mapWithParametersFromFile = pair.getValue();
 
             try{
-                HashMap<String, String> mapWithParametersFromMemory = MainInit.globalSettingForBot.get(chatIDFromFile);
+                HashMap<String, String> mapWithParametersFromMemory = MainInit.userSettingForBot.get(chatIDFromFile);
                 if(mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)){
                     System.out.println("SettingsBotGlobal for bots in memory is equals to settings in current file.");
                     return true;

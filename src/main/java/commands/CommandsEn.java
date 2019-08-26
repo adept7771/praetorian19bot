@@ -1,6 +1,6 @@
 package commands;
 
-public enum Commands {
+public enum CommandsEn {
 
     help("Hi there! Look down to command list:"),
     start("The bot running 24/7 and already started for all users. Use /help command to het more help."),
@@ -9,11 +9,12 @@ public enum Commands {
             "contact with him and ask few questions. If new member will answer it right - bot will give him send message rights." +
             " Also silent members who not wrote any messages in short period after joining to chat should be removed by bot." +
             " \n\n >>>>>>>>> ATTENTION: you must give to bot all admin rights"),
+    language("Choose language to operate with bot. Supported: Ru, En")
     ;
 
     public String value;
 
-    Commands(String value) {
+    CommandsEn(String value) {
         this.value = value;
     }
 }

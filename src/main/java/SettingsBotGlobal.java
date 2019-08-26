@@ -9,7 +9,6 @@ public enum SettingsBotGlobal {
 
     nameForProduction("Praetorian19bot"), // names
     nameForTest("praetorian19testbot"), //
-
     ;
 
     public String value;

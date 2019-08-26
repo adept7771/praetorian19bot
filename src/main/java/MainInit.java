@@ -10,13 +10,12 @@ public class MainInit {
 
     public static String absolutePath = MainInit.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
-    static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<Integer, Integer>();
-    static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<Integer, Long>();
-    static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<Integer, Long>();
+    static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<>();
+    static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<>();
+    static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
 
-    static SettingsHandler settingsHandler = new SettingsHandler();;
-    static HashMap<Long, HashMap<String, String>> globalSettingForBot;
-
+    static UserSettingsHandler userSettingsHandler = new UserSettingsHandler();;
+    static HashMap<Long, HashMap<String, String>> userSettingForBot;
 
     public static void main(String[] args) {
 
