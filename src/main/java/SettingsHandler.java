@@ -1,29 +1,33 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 class SettingsHandler {
+
+    private static File settingsFile = new File(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
+    public static long lastSettingsSavedTime;
+
 
     static { // initial check that settings file is exist
 
         System.out.println("Absolute path to working dir is: " + MainInit.absolutePath);
 
-        File file = new File(MainInit.absolutePath + "/settings.txt");
+        System.out.println("Is settings file exists? " + settingsFile.exists());
 
-        System.out.println("Is settings file exists? " + file.exists());
+        ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
 
-        ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(file);
-
-        if(!listOfParametersFromSettingsFile.isEmpty()){
+        if (!listOfParametersFromSettingsFile.isEmpty()) {
 
             System.out.println("List of parameters from settings file is not empty! Initialising in memory.");
 
             MainInit.globalSettingForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
-            System.out.println("Parsed Map stored to memory successful");
-        }
-        else { // if file with setting is empty
-            System.out.println("List of parameters from settings file is empty! Nothing to initialising in memory.");
+            System.out.println("Parsed Map with settings from file stored to memory successful");
+            SettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
+
+        } else { // if file with setting is empty
+
+            System.out.println("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
+            SettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
         }
 
 //        //Создаем поток-чтения-байт-из-файла
@@ -43,20 +47,49 @@ class SettingsHandler {
         //System.out.println("test");
     }
 
-    public static void syncSettingsInMemAndSettingFileIfDifferent(){
-
+    public static void storeSettingsFromMemoryToFile() {
 
 
     }
 
-    public static boolean checkSettingsInMemAndInFile(){
+    public static boolean comparingSettingsInMemoryAndInFile() {
 
+        System.out.println("Comparing settings in mem and in file");
 
+        HashMap<Long, HashMap<String, String>> copyOfCurrentSettingsFileInMapView = parseSettingsFileInMap(settingsFile);
 
+        Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
+        while (iterator.hasNext())
+        {
+            Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
+            Long chatIDFromFile = pair.getKey();
+            HashMap<String, String> mapWithParametersFromFile = pair.getValue();
+
+            try{
+                HashMap<String, String> mapWithParametersFromMemory = MainInit.globalSettingForBot.get(chatIDFromFile);
+                if(mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)){
+                    System.out.println("SettingsBotGlobal for bots in memory is equals to settings in current file.");
+                    return true;
+                }
+                else {
+                    System.out.println("SettingsBotGlobal for bots in memory is NOT equals to settings in current file.");
+                    return false;
+                }
+            }
+            catch (Exception e){
+                System.out.println("Error while comparing setting in bot file and in memory. Return defaul true.");
+                return true;
+            }
+        }
+        System.out.println("Error while comparing setting in bot file and in memory. Return defaul true.");
         return true;
     }
 
-    public static ArrayList<String> parseSettingsFileIntoArrayList(File file){
+    static HashMap<Long, HashMap<String, String>> parseSettingsFileInMap(File file) {
+        return parseSettingsArrayListInSettingsMap(parseSettingsFileIntoArrayList(file));
+    }
+
+    public static ArrayList<String> parseSettingsFileIntoArrayList(File file) {
 
         ArrayList<String> listOfParametersFromSettingsFile = new ArrayList<>();
 
@@ -64,7 +97,7 @@ class SettingsHandler {
             try { // create file if it not exists
                 System.out.println("File with setting not found. Creating it now.");
                 String data = " ";
-                FileOutputStream out = new FileOutputStream(MainInit.absolutePath + "/settings.txt");
+                FileOutputStream out = new FileOutputStream(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
                 out.write(data.getBytes());
                 out.close();
             } catch (Exception e) {
@@ -74,7 +107,7 @@ class SettingsHandler {
             try {
                 System.out.println("File with setting is found. Initialising it in MEMORY variable.");
 
-                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(MainInit.absolutePath + "/settings.txt"))));
+                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(MainInit.absolutePath + SettingsBotGlobal.settingsFileName))));
 
                 while (fileReader.ready()) {
                     listOfParametersFromSettingsFile.add(fileReader.readLine());
@@ -87,11 +120,11 @@ class SettingsHandler {
         return listOfParametersFromSettingsFile;
     }
 
-    static HashMap<Long, HashMap<String, String>> parseSettingsArrayListInSettingsMap(ArrayList<String> listOfParametersFromSettingsFile){
+    static HashMap<Long, HashMap<String, String>> parseSettingsArrayListInSettingsMap(ArrayList<String> listOfParametersFromSettingsFile) {
 
         HashMap<Long, HashMap<String, String>> mapWithSettings = new HashMap<>();
 
-        for(String lineWithAllParams : listOfParametersFromSettingsFile){
+        for (String lineWithAllParams : listOfParametersFromSettingsFile) {
 
             System.out.println("Current string with settings is: " + lineWithAllParams);
 
@@ -100,16 +133,16 @@ class SettingsHandler {
 
             mapWithSettings.put(idOfChat, new HashMap<>());
 
-            for(int i = indexOfFirstComma; i < lineWithAllParams.length(); i++){
-                if(String.valueOf(lineWithAllParams.charAt(i)).equals(",")){
-                    int nextIndexOfComma = lineWithAllParams.indexOf("," , i+1);
-                    if(nextIndexOfComma == -1){
+            for (int i = indexOfFirstComma; i < lineWithAllParams.length(); i++) {
+                if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
+                    int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
+                    if (nextIndexOfComma == -1) {
                         nextIndexOfComma = lineWithAllParams.length();
                     }
-                    String dataToWrite = lineWithAllParams.substring(i+1, nextIndexOfComma);
+                    String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
                     mapWithSettings.get(idOfChat).put(
                             dataToWrite.substring(0, dataToWrite.indexOf("=")),
-                            dataToWrite.substring(dataToWrite.indexOf("=")+1)
+                            dataToWrite.substring(dataToWrite.indexOf("=") + 1)
                     );
                 }
             }

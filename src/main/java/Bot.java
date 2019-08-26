@@ -75,7 +75,7 @@ public class Bot extends TelegramLongPollingBot {
 
             System.out.println("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMain + " || Difference: " + (currentDateTime - joinTimeFromMain));
 
-            if ((currentDateTime - joinTimeFromMain) > 600) {
+            if ((currentDateTime - joinTimeFromMain) > Long.valueOf(SettingsBotGlobal.timePeriodForSilentUsersByDefault.toString())) {
                 System.out.println("Difference bigger then defined value! " + userIdFromMain + " will be kicked");
                 KickChatMember kickChatMember = new KickChatMember();
                 kickChatMember.setChatId(chatIdFromMain)
@@ -432,10 +432,10 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotUsername() {
         // Return bot username
         if(MainInit.mode){
-            return Settings.botName;
+            return SettingsBotGlobal.nameForProduction.value;
         }
         else {
-            return Settings.testBotName;
+            return SettingsBotGlobal.nameForTest.value;
         }
     }
 
@@ -443,10 +443,10 @@ public class Bot extends TelegramLongPollingBot {
     public String getBotToken() {
         // Return bot token from BotFather
         if(MainInit.mode){
-            return Settings.botKeyToken;
+            return SettingsBotGlobal.tokenForProduction.toString();
         }
         else {
-            return Settings.testBotKeyToken;
+            return SettingsBotGlobal.tokenForTest.toString();
         }
     }
 }

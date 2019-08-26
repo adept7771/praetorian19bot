@@ -2,13 +2,11 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.HashMap;
 
 public class MainInit {
 
-    static boolean mode = false; // true - production, false - test
+    static boolean mode = Boolean.valueOf(String.valueOf(SettingsBotGlobal.botType)); // true - production, false - test
 
     public static String absolutePath = MainInit.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
