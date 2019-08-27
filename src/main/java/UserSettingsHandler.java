@@ -6,7 +6,6 @@ class UserSettingsHandler {
     private static File settingsFile = new File(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
     public static long lastSettingsSavedTime;
 
-
     static { // initial check that settings file is exist
 
         System.out.println("Absolute path to working dir is: " + MainInit.absolutePath);
@@ -19,7 +18,7 @@ class UserSettingsHandler {
 
             System.out.println("List of parameters from settings file is not empty! Initialising in memory.");
 
-            MainInit.userSettingForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
+            MainInit.userSettingsForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
             System.out.println("Parsed Map with settings from file stored to memory successful");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
@@ -52,7 +51,17 @@ class UserSettingsHandler {
 
     }
 
-    public static boolean comparingSettingsInMemoryAndInFile() {
+    public boolean compareChatSettingOptionValueInMem(long chatID, String optionNameToCompare, String optionValueToCompare){
+        try{
+            return MainInit.userSettingsForBot.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
+        }
+        catch (Exception e){
+            System.out.println(e.toString());
+            return false;
+        }
+    }
+
+    public static boolean compareAllSettingsInMemoryAndInFile() {
 
         System.out.println("Comparing settings in mem and in file");
 
@@ -66,7 +75,7 @@ class UserSettingsHandler {
             HashMap<String, String> mapWithParametersFromFile = pair.getValue();
 
             try{
-                HashMap<String, String> mapWithParametersFromMemory = MainInit.userSettingForBot.get(chatIDFromFile);
+                HashMap<String, String> mapWithParametersFromMemory = MainInit.userSettingsForBot.get(chatIDFromFile);
                 if(mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)){
                     System.out.println("SettingsBotGlobal for bots in memory is equals to settings in current file.");
                     return true;

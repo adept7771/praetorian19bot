@@ -6,16 +6,14 @@ import java.util.HashMap;
 
 public class MainInit {
 
-    static boolean mode = Boolean.valueOf(String.valueOf(SettingsBotGlobal.botType)); // true - production, false - test
-
     public static String absolutePath = MainInit.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
     static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
 
-    static UserSettingsHandler userSettingsHandler = new UserSettingsHandler();;
-    static HashMap<Long, HashMap<String, String>> userSettingForBot;
+    static UserSettingsHandler userSettingsHandler;
+    static HashMap<Long, HashMap<String, String>> userSettingsForBot;
 
     public static void main(String[] args) {
 

@@ -430,7 +430,7 @@ public class Bot extends TelegramLongPollingBot {
 
     public String getBotUsername() {
         // Return bot username
-        if(MainInit.mode){
+        if(SettingsBotGlobal.botType.value.equals("true")){
             return SettingsBotGlobal.nameForProduction.value;
         }
         else {
@@ -441,11 +441,11 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         // Return bot token from BotFather
-        if(MainInit.mode){
-            return SettingsBotGlobal.tokenForProduction.toString();
+        if(SettingsBotGlobal.botType.value.equals("true")){
+            return SettingsBotGlobal.tokenForProduction.value;
         }
         else {
-            return SettingsBotGlobal.tokenForTest.toString();
+            return SettingsBotGlobal.tokenForTest.value;
         }
     }
 }
