@@ -119,8 +119,7 @@ public class Bot extends TelegramLongPollingBot {
             if (messageInChatContainsBotName || replyMessageContainsBotName || isUpdateContainsDirectMessageToBot) {
 
                 // COMMANDS HANDLING -------------------------------->
-                if (messageText.contains("/")){
-
+                if (messageText!= null && messageText.contains("/")){
                     handleAllCommands(messageText, chatId, messageId);
                 }
 
