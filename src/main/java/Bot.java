@@ -1,4 +1,4 @@
-import commands.CommandsEn;
+import commandsAndTexts.commands.CommandsEn;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,7 +24,7 @@ public class Bot extends TelegramLongPollingBot {
         long currentDateTime = (new Date().getTime()) / 1000;
         Pattern pattern = Pattern.compile(regex);
         long chatId = update.getMessage().getChatId();
-        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsDirectMessageToBot = false;
+        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalPrivateMessageToBot = false;
         Message replyMessage = null;
 
         try {
@@ -59,7 +59,7 @@ public class Bot extends TelegramLongPollingBot {
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
         newMembersWarningMessageAndQuestionGeneration
-                ("Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have " + SettingsBotGlobal.timePeriodForSilentUsersByDefault.toString() + " seconds. How much will be ", update);
+                ("Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have " + SettingsBotGlobal.timePeriodForSilentUsersByDefault.value + " seconds. How much will be ", update);
 
         // MESSAGES HANDLING ------------------------------------------------------------>
         if (update.hasMessage()) {
@@ -71,11 +71,11 @@ public class Bot extends TelegramLongPollingBot {
             if (replyMessage != null) {
                 try {
                     System.out.println("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
-                    replyMessageContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
+                    replyMessageInChatContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
                 } catch (Exception e) {
-                    replyMessageContainsBotName = false;
+                    replyMessageInChatContainsBotName = false;
                 } finally {
-                    System.out.println("Is reply message name contains bot name status: " + replyMessageContainsBotName);
+                    System.out.println("Is reply message name contains bot name status: " + replyMessageInChatContainsBotName);
                 }
             }
 
@@ -93,63 +93,37 @@ public class Bot extends TelegramLongPollingBot {
             // if it personal message in personal direct chat
             try {
                 if (update.getMessage().getChat().isUserChat()) {
-                    isUpdateContainsDirectMessageToBot = true;
+                    isUpdateContainsPersonalPrivateMessageToBot = true;
                     System.out.println("Update is private message to bot.");
                 }
             } catch (Exception e) {
-                isUpdateContainsDirectMessageToBot = false;
+                isUpdateContainsPersonalPrivateMessageToBot = false;
             }
 
-            // ------------- CHECK MENTIONS IN DIRECT MESSAGE OR IN REPLY
-            if (messageInChatContainsBotName || replyMessageContainsBotName || isUpdateContainsDirectMessageToBot) {
+            // ------------- CHECK MENTIONS IN CHAT MESSAGE OR IN REPLY
+
+            if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalPrivateMessageToBot) {
+                // user also can answer in personal private messages to bot
 
                 // COMMANDS HANDLING -------------------------------->
                 if (messageText != null && messageText.contains("/")) {
-                    handleAllCommands(messageText, chatId, messageId);
+                    handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPrivateMessageToBot);
                 }
 
-                // Check if user send CODE to unblock and if user is in newbie block list ---------------------->
-                else if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */) {
-
+                // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
+                if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPrivateMessageToBot) {
                     validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
+                }
+            } else { // no mentions of bot or personal private messages to him
 
-                } else { // if message from newbie but not contains digit answer
-                    System.out.println("Message to bot NOT contains any digits. Ban and delete from newbie list.");
-
-                    int userId = update.getMessage().getFrom().getId();
-
-                    MainInit.newbieMapWithAnswer.remove(userId);
-                    MainInit.newbieMapWithJoinTime.remove(userId);
-                    MainInit.newbieMapWithChatId.remove(userId);
-
-                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
-
-                    kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                    sendReplyMessageToChatID(chatId,
-                            "Wrong. Sorry entered DATA contains only letters. You will be banned!", messageId);
-
-                    // DELETE FIRST WRONG MESSAGE FROM USER
-                    deleteMessageAndSayText(chatId, messageId,
-                            "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+                // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
+                if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPrivateMessageToBot) {
+                    validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
                 }
             }
-        } else { // If we have an update with message from user in newbie block list. Delete it and ban motherfucker.
-            if (MainInit.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) && !isUpdateContainsDirectMessageToBot) {
 
-                System.out.println("Message from user is not posted for praetorian. But it can contains answer for question. Checking.");
+        } else { // If we get update without message
 
-                int userId = update.getMessage().getFrom().getId();
-
-                deleteMessageAndSayText(chatId, update.getMessage().getMessageId(), "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
-
-                MainInit.newbieMapWithAnswer.remove(userId);
-                MainInit.newbieMapWithJoinTime.remove(userId);
-                MainInit.newbieMapWithChatId.remove(userId);
-
-                System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
-
-                kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-            }
         }
     }
 
@@ -194,7 +168,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private int normalizeUserAnswer(String stringToNormalize){
+    private int normalizeUserAnswer(String stringToNormalize) {
         try { // try to normalize string
             String tmpNewbieAnswer = stringToNormalize.replaceAll("\\s", "");
             tmpNewbieAnswer = tmpNewbieAnswer.replaceAll("([a-z])", "");
@@ -203,7 +177,7 @@ public class Bot extends TelegramLongPollingBot {
             tmpNewbieAnswer = tmpNewbieAnswer.replaceAll("([А-Я])", "");
             return Integer.valueOf(tmpNewbieAnswer);
         } catch (NumberFormatException e) {
-            return  0;
+            return 0;
         }
     }
 
@@ -216,67 +190,98 @@ public class Bot extends TelegramLongPollingBot {
         Integer generatedNewbieAnswerDigit = MainInit.newbieMapWithAnswer.get(newbieId);
         Integer currentNewbieAnswer = 0;
 
-        currentNewbieAnswer = normalizeUserAnswer(messageText);
-
         String answerText = "";
 
-        System.out.println("Normalized newbie answer is: " + currentNewbieAnswer);
+        if (messageText == null) { // it can be sticker or picture and it must be deleted immediately
+            MainInit.newbieMapWithAnswer.remove(newbieId);
+            MainInit.newbieMapWithJoinTime.remove(newbieId);
+            MainInit.newbieMapWithChatId.remove(newbieId);
 
-        Matcher matcher = pattern.matcher(messageText); // contain at least digits
+            System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
-        if (matcher.matches()) { // if contains at least digits
-            System.out.println("Message to bot contains REGEX digital pattern");
+            answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
 
-            if (currentNewbieAnswer.equals(generatedNewbieAnswerDigit)) { // if user gives us right answer
+            sendReplyMessageToChatID(chatId, answerText, messageId);
 
-                MainInit.newbieMapWithAnswer.remove(newbieId);
-                MainInit.newbieMapWithJoinTime.remove(newbieId);
-                MainInit.newbieMapWithChatId.remove(newbieId);
+            // DELETE FIRST WRONG MESSAGE FROM USER
+            deleteMessage(chatId, messageId);
+            kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+            sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+
+        } else { // if message contains any text data
+
+            currentNewbieAnswer = normalizeUserAnswer(messageText);
+
+            System.out.println("Normalized newbie answer is: " + currentNewbieAnswer);
+
+            Matcher matcher = pattern.matcher(messageText); // contain at least digits
+
+            if (matcher.matches()) { // if contains at least digits
+                System.out.println("Message to bot contains REGEX digital pattern");
+
+                if (currentNewbieAnswer.equals(generatedNewbieAnswerDigit)) { // if user gives us right answer
+
+                    MainInit.newbieMapWithAnswer.remove(newbieId);
+                    MainInit.newbieMapWithJoinTime.remove(newbieId);
+                    MainInit.newbieMapWithChatId.remove(newbieId);
+
+                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+
+                    answerText += "Right! Now you can send messages to group. Have a nice chatting.";
+
+                    sendReplyMessageToChatID(chatId, answerText, messageId);
+
+                } else { // if user gives us WRONG answer
+
+                    MainInit.newbieMapWithAnswer.remove(newbieId);
+                    MainInit.newbieMapWithJoinTime.remove(newbieId);
+                    MainInit.newbieMapWithChatId.remove(newbieId);
+
+                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+
+                    answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
+
+                    sendReplyMessageToChatID(chatId, answerText, messageId);
+
+                    // DELETE FIRST WRONG MESSAGE FROM USER
+                    deleteMessage(chatId, messageId);
+                    kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+                    sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+                }
+            } else { // if message from newbie but not contains digit answer
+                System.out.println("Message to bot NOT contains any digits. Ban and delete from newbie list.");
+
+                int userId = update.getMessage().getFrom().getId();
+
+                MainInit.newbieMapWithAnswer.remove(userId);
+                MainInit.newbieMapWithJoinTime.remove(userId);
+                MainInit.newbieMapWithChatId.remove(userId);
 
                 System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
-                answerText += "Right! Now you can send messages to group. Have a nice chatting.";
-
-                sendReplyMessageToChatID(chatId, answerText, messageId);
-
-            } else { // if user gives us WRONG answer
-
-                MainInit.newbieMapWithAnswer.remove(newbieId);
-                MainInit.newbieMapWithJoinTime.remove(newbieId);
-                MainInit.newbieMapWithChatId.remove(newbieId);
-
-                System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
-
-                answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
-
-                sendReplyMessageToChatID(chatId, answerText, messageId);
+                kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+                sendReplyMessageToChatID(chatId,
+                        "Wrong. Sorry entered DATA contains only letters. You will be banned!", messageId);
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
-                deleteMessage(chatId, messageId);
-                kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+                deleteMessageAndSayText(chatId, messageId,
+                        "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
             }
         }
+
+
     }
 
-    private void handleAllCommands(String messageText, long chatId, Integer messageId) {
-        if (messageText.contains("/help")) { // Print all messages in ONE message
-            System.out.println("Message text contains /help - show commands list");
+    private void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage) {
+        if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
+            System.out.println("Message text contains /help - show commandsAndTexts list");
             StringBuilder helpText = new StringBuilder();
             for (CommandsEn commands : CommandsEn.values()) {
                 helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
             }
 
-            SendMessage message = new SendMessage() // Create a message object object
-                    .setChatId(chatId)
-                    .setReplyToMessageId(messageId)
-                    .setText(helpText.toString());
-            try {
-                execute(message); // Sending our message object to user
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-        } else {
+            sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
+        } else { // Print help to command and handle it
             System.out.println("Message text contains / - it's a command");
             String helpText = "";
 
@@ -287,15 +292,8 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }
 
-            SendMessage message = new SendMessage()
-                    .setChatId(chatId)
-                    .setReplyToMessageId(messageId)
-                    .setText(helpText);
-            try {
-                execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+            sendReplyMessageToChatID(chatId, helpText, messageId);
+
         }
     }
 

@@ -1,4 +1,4 @@
-package commands;
+package commandsAndTexts;
 
 public enum AdminCommands {
     defaultLanguageForAll,

@@ -1,16 +1,16 @@
-package commands;
+package commandsAndTexts.commands;
 
 public enum CommandsEn {
 
     help("Hi there! Look down to command list:"),
-    start("The bot running 24/7 and already started for all users. Use /help command to het more help."),
+    start("The bot running 24/7 and already started for all users. Use /help command to get more help."),
     about("This bot created for auto moderate new group members for protect your chat from bots. " +
             "If newbie will appear in chat bot will " +
             "contact with him and ask few questions. If new member will answer it right - bot will give him send message rights." +
             " Also silent members who not wrote any messages in short period after joining to chat should be removed by bot." +
+            " For your and chat members convenience all settings of bot can be tunned in personal messages. " +
             " \n\n >>>>>>>>> ATTENTION: you must give to bot all admin rights"),
-    //language("Choose language to operate with bot. Supported: Ru, En"),
-    //defaultLanguageForAll("Language for all users by default."),
+    defaultLanguageForAll("Language for all users by default. Admin settings."),
     //autocheckLanguageForAll("This option will make bot to recognize user's language from update if it no defined by user. But if it NULL will used GLOBAL language setting for user."),
     ;
 
