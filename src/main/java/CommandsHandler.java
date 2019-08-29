@@ -1,11 +1,7 @@
 import commandsAndTexts.commands.CommandsEn;
-import commandsAndTexts.texts.TextsEn;
+import commandsAndTexts.texts.EnTexts;
 import org.apache.log4j.Logger;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
-import org.telegram.telegrambots.meta.api.objects.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import java.util.ArrayList;
 
 public class CommandsHandler {
 
@@ -50,7 +46,7 @@ public class CommandsHandler {
 
             }
             else { // if not an admin
-                Main.bot.sendMessageToChatID(chatId, TextsEn.adminCheckWrong.name());
+                Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name());
             }
 
             if (command.contains("En")) {

@@ -1,4 +1,6 @@
 import commandsAndTexts.commands.CommandsEn;
+import commandsAndTexts.texts.EnTexts;
+import commandsAndTexts.texts.RuTexts;
 import org.apache.log4j.Logger;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
 public class Bot extends TelegramLongPollingBot {
 
     public static final Logger log = Logger.getLogger(Bot.class);
+    public static Update currentUpdate;
 
     static {
         log.info("Bot successfully initialised.");
@@ -29,6 +32,7 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
 
         log.info("Full update: " + update.toString());
+        currentUpdate = update;
 
         String regex = "(.)*(\\d)(.)*"; // for check digits in answer
         long currentDateTime = (new Date().getTime()) / 1000;
@@ -347,8 +351,6 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendMessageToChatID(long chatId, String messageText) {
-
-
         SendMessage message = new SendMessage()
                 .setChatId(chatId)
                 .setText(messageText);
@@ -356,6 +358,18 @@ public class Bot extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
             log.info("Error while trying to send message in chatId " + chatId + " " + e.toString());
+        }
+    }
+
+    public void sendMessageToChatID(long chatId, String messageText, boolean messageTextIsTemplateText) {
+        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        if(language.contains("ru") && messageTextIsTemplateText){
+            sendMessageToChatID(chatId, RuTexts.valueOf(messageText).toString());
+        } else if(language.contains("en") && messageTextIsTemplateText){
+            sendMessageToChatID(chatId, EnTexts.valueOf(messageText).toString());
+        }
+        else {
+            sendMessageToChatID(chatId, messageText);
         }
     }
 

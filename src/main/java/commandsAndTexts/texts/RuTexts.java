@@ -1,4 +1,4 @@
 package commandsAndTexts.texts;
 
-public enum TextsRu {
+public enum RuTexts {
 }
