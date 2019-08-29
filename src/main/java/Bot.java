@@ -110,7 +110,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 // COMMANDS HANDLING -------------------------------->
                 if (messageText != null && messageText.contains("/")) {
-                    handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPrivateMessageToBot);
+                    CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPrivateMessageToBot);
                 }
 
                 // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->

@@ -3,12 +3,9 @@ import org.apache.log4j.Logger;
 
 public class CommandsHandler {
 
-
-
     private static final Logger log = Logger.getLogger(CommandsHandler.class);
 
-
-    public void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage){
+    public static void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage){
         if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
             log.info("Message text contains /help - show commandsAndTexts list");
             StringBuilder helpText = new StringBuilder();
