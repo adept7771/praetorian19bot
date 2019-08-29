@@ -1,31 +1,34 @@
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.util.*;
 
 class UserSettingsHandler {
 
+    private static final Logger log = Logger.getLogger(UserSettingsHandler.class);
     private static File settingsFile = new File(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
     public static long lastSettingsSavedTime;
 
     static { // initial check that settings file is exist
 
-        System.out.println("Absolute path to working dir is: " + MainInit.absolutePath);
+        log.info("Absolute path to working dir is: " + MainInit.absolutePath);
 
-        System.out.println("Is settings file exists? " + settingsFile.exists());
+        log.info("Is settings file exists? " + settingsFile.exists());
 
         ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
 
         if (!listOfParametersFromSettingsFile.isEmpty()) {
 
-            System.out.println("List of parameters from settings file is not empty! Initialising in memory.");
+            log.info("List of parameters from settings file is not empty! Initialising in memory.");
 
             MainInit.userSettingsForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
-            System.out.println("Parsed Map with settings from file stored to memory successful");
+            log.info("Parsed Map with settings from file stored to memory successful");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
 
         } else { // if file with setting is empty
 
-            System.out.println("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
+            log.info("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
         }
 
@@ -43,7 +46,7 @@ class UserSettingsHandler {
 //        inputStream.close(); //закрываем оба потока. Они больше не нужны.
 //        outputStream.close();
 
-        //System.out.println("test");
+        //log.info("test");
     }
 
     public static void storeSettingsFromMemoryToFile() {
@@ -56,14 +59,14 @@ class UserSettingsHandler {
             return MainInit.userSettingsForBot.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
         }
         catch (Exception e){
-            System.out.println(e.toString());
+            log.info(e.toString());
             return false;
         }
     }
 
     public static boolean compareAllSettingsInMemoryAndInFile() {
 
-        System.out.println("Comparing settings in mem and in file");
+        log.info("Comparing settings in mem and in file");
 
         HashMap<Long, HashMap<String, String>> copyOfCurrentSettingsFileInMapView = parseSettingsFileInMap(settingsFile);
 
@@ -77,20 +80,20 @@ class UserSettingsHandler {
             try{
                 HashMap<String, String> mapWithParametersFromMemory = MainInit.userSettingsForBot.get(chatIDFromFile);
                 if(mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)){
-                    System.out.println("SettingsBotGlobal for bots in memory is equals to settings in current file.");
+                    log.info("SettingsBotGlobal for bots in memory is equals to settings in current file.");
                     return true;
                 }
                 else {
-                    System.out.println("SettingsBotGlobal for bots in memory is NOT equals to settings in current file.");
+                    log.info("SettingsBotGlobal for bots in memory is NOT equals to settings in current file.");
                     return false;
                 }
             }
             catch (Exception e){
-                System.out.println("Error while comparing setting in bot file and in memory. Return defaul true.");
+                log.info("Error while comparing setting in bot file and in memory. Return defaul true.");
                 return true;
             }
         }
-        System.out.println("Error while comparing setting in bot file and in memory. Return defaul true.");
+        log.info("Error while comparing setting in bot file and in memory. Return defaul true.");
         return true;
     }
 
@@ -104,17 +107,17 @@ class UserSettingsHandler {
 
         if (!file.exists()) {
             try { // create file if it not exists
-                System.out.println("File with setting not found. Creating it now.");
+                log.info("File with setting not found. Creating it now.");
                 String data = " ";
                 FileOutputStream out = new FileOutputStream(MainInit.absolutePath + SettingsBotGlobal.settingsFileName);
                 out.write(data.getBytes());
                 out.close();
             } catch (Exception e) {
-                System.out.println("Error while trying to create file with settings");
+                log.info("Error while trying to create file with settings");
             }
         } else {
             try {
-                System.out.println("File with setting is found. Initialising it in MEMORY variable.");
+                log.info("File with setting is found. Initialising it in MEMORY variable.");
 
                 BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(MainInit.absolutePath + SettingsBotGlobal.settingsFileName))));
 
@@ -135,7 +138,7 @@ class UserSettingsHandler {
 
         for (String lineWithAllParams : listOfParametersFromSettingsFile) {
 
-            System.out.println("Current string with settings is: " + lineWithAllParams);
+            log.info("Current string with settings is: " + lineWithAllParams);
 
             int indexOfFirstComma = lineWithAllParams.indexOf(",");
             long idOfChat = Long.valueOf(lineWithAllParams.substring(0, indexOfFirstComma));
@@ -155,7 +158,7 @@ class UserSettingsHandler {
                     );
                 }
             }
-            System.out.println("Parsed all params for ChatID into map: " + idOfChat);
+            log.info("Parsed all params for ChatID into map: " + idOfChat);
         }
         return mapWithSettings;
     }

@@ -1,4 +1,5 @@
 import commandsAndTexts.commands.CommandsEn;
+import org.apache.log4j.Logger;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -16,9 +17,11 @@ import java.util.regex.Pattern;
 
 public class Bot extends TelegramLongPollingBot {
 
+    private static final Logger log = Logger.getLogger(Bot.class);
+
     public void onUpdateReceived(Update update) {
 
-        System.out.println("Full update: " + update.toString());
+        log.info("Full update: " + update.toString());
 
         String regex = "(.)*(\\d)(.)*"; // for check digits in answer
         long currentDateTime = (new Date().getTime()) / 1000;
@@ -31,7 +34,7 @@ public class Bot extends TelegramLongPollingBot {
             replyMessage = update.getMessage().getReplyToMessage();
             if (replyMessage != null) {
                 isUpdateContainsReply = true;
-                System.out.println("Update contains reply message: " + replyMessage);
+                log.info("Update contains reply message: " + replyMessage);
             }
         } catch (Exception e) {
             replyMessage = null;
@@ -39,7 +42,7 @@ public class Bot extends TelegramLongPollingBot {
         try {
             update.getMessage().getFrom().getBot();
             if (isUpdateFromBot) {
-                System.out.println("Update from bot. Ignoring.");
+                log.info("Update from bot. Ignoring.");
             }
         } catch (Exception e) {
             isUpdateFromBot = false;
@@ -54,7 +57,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         // Periodic task to check users who doesn't say everything
-        System.out.println("Current newbie lists size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+        log.info("Current newbie lists size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
         checkAndRemoveAllSilentUsers(currentDateTime);
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
@@ -70,12 +73,12 @@ public class Bot extends TelegramLongPollingBot {
             // is it reply message contains bot name?
             if (replyMessage != null) {
                 try {
-                    System.out.println("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
+                    log.info("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
                     replyMessageInChatContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
                 } catch (Exception e) {
                     replyMessageInChatContainsBotName = false;
                 } finally {
-                    System.out.println("Is reply message name contains bot name status: " + replyMessageInChatContainsBotName);
+                    log.info("Is reply message name contains bot name status: " + replyMessageInChatContainsBotName);
                 }
             }
 
@@ -86,7 +89,7 @@ public class Bot extends TelegramLongPollingBot {
                 messageInChatContainsBotName = false;
             } finally {
                 if (replyMessage == null) {
-                    System.out.println("Chat message contains praetorian bot name: " + messageInChatContainsBotName);
+                    log.info("Chat message contains praetorian bot name: " + messageInChatContainsBotName);
                 }
             }
 
@@ -94,7 +97,7 @@ public class Bot extends TelegramLongPollingBot {
             try {
                 if (update.getMessage().getChat().isUserChat()) {
                     isUpdateContainsPersonalPrivateMessageToBot = true;
-                    System.out.println("Update is private message to bot.");
+                    log.info("Update is private message to bot.");
                 }
             } catch (Exception e) {
                 isUpdateContainsPersonalPrivateMessageToBot = false;
@@ -132,24 +135,24 @@ public class Bot extends TelegramLongPollingBot {
     private void checkAndRemoveAllSilentUsers(long currentDateTime) {
         for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) MainInit.newbieMapWithAnswer.entrySet()) {
 
-            System.out.println("Iterating newbie lists.");
+            log.info("Iterating newbie lists.");
 
             Integer userIdFromMainClass = pair.getKey();
             Long joinTimeFromMainClass = MainInit.newbieMapWithJoinTime.get(userIdFromMainClass);
             Long chatIdFromMainClass = MainInit.newbieMapWithChatId.get(userIdFromMainClass);
 
-            System.out.println("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMainClass + " || Difference: " + (currentDateTime - joinTimeFromMainClass));
+            log.info("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMainClass + " || Difference: " + (currentDateTime - joinTimeFromMainClass));
 
             if ((currentDateTime - joinTimeFromMainClass) > Long.valueOf(SettingsBotGlobal.timePeriodForSilentUsersByDefault.value)) {
 
-                System.out.println("Difference bigger then defined value! " + userIdFromMainClass + " will be kicked");
+                log.info("Difference bigger then defined value! " + userIdFromMainClass + " will be kicked");
                 kickChatMember(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
 
                 MainInit.newbieMapWithAnswer.remove(userIdFromMainClass);
                 MainInit.newbieMapWithJoinTime.remove(userIdFromMainClass);
                 MainInit.newbieMapWithChatId.remove(userIdFromMainClass);
 
-                System.out.println("Silent user removed. Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+                log.info("Silent user removed. Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                 sendMessageToChatID(chatIdFromMainClass, "Silent user was removed after delay. Meow!");
             }
@@ -184,7 +187,7 @@ public class Bot extends TelegramLongPollingBot {
     private void validateNewbieAnswer(Update update, String messageText, Pattern pattern, long chatId,
                                       int messageId, long currentDateTime) {
 
-        System.out.println("User which posted message is NEWBIE. Check initialising.");
+        log.info("User which posted message is NEWBIE. Check initialising.");
 
         Integer newbieId = update.getMessage().getFrom().getId();
         Integer generatedNewbieAnswerDigit = MainInit.newbieMapWithAnswer.get(newbieId);
@@ -197,7 +200,7 @@ public class Bot extends TelegramLongPollingBot {
             MainInit.newbieMapWithJoinTime.remove(newbieId);
             MainInit.newbieMapWithChatId.remove(newbieId);
 
-            System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+            log.info("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
             answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
 
@@ -212,12 +215,12 @@ public class Bot extends TelegramLongPollingBot {
 
             currentNewbieAnswer = normalizeUserAnswer(messageText);
 
-            System.out.println("Normalized newbie answer is: " + currentNewbieAnswer);
+            log.info("Normalized newbie answer is: " + currentNewbieAnswer);
 
             Matcher matcher = pattern.matcher(messageText); // contain at least digits
 
             if (matcher.matches()) { // if contains at least digits
-                System.out.println("Message to bot contains REGEX digital pattern");
+                log.info("Message to bot contains REGEX digital pattern");
 
                 if (currentNewbieAnswer.equals(generatedNewbieAnswerDigit)) { // if user gives us right answer
 
@@ -225,7 +228,7 @@ public class Bot extends TelegramLongPollingBot {
                     MainInit.newbieMapWithJoinTime.remove(newbieId);
                     MainInit.newbieMapWithChatId.remove(newbieId);
 
-                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+                    log.info("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                     answerText += "Right! Now you can send messages to group. Have a nice chatting.";
 
@@ -237,7 +240,7 @@ public class Bot extends TelegramLongPollingBot {
                     MainInit.newbieMapWithJoinTime.remove(newbieId);
                     MainInit.newbieMapWithChatId.remove(newbieId);
 
-                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+                    log.info("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                     answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
 
@@ -249,7 +252,7 @@ public class Bot extends TelegramLongPollingBot {
                     sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
                 }
             } else { // if message from newbie but not contains digit answer
-                System.out.println("Message to bot NOT contains any digits. Ban and delete from newbie list.");
+                log.info("Message to bot NOT contains any digits. Ban and delete from newbie list.");
 
                 int userId = update.getMessage().getFrom().getId();
 
@@ -257,7 +260,7 @@ public class Bot extends TelegramLongPollingBot {
                 MainInit.newbieMapWithJoinTime.remove(userId);
                 MainInit.newbieMapWithChatId.remove(userId);
 
-                System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+                log.info("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
                 kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
                 sendReplyMessageToChatID(chatId,
@@ -274,7 +277,7 @@ public class Bot extends TelegramLongPollingBot {
 
     private void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage) {
         if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
-            System.out.println("Message text contains /help - show commandsAndTexts list");
+            log.info("Message text contains /help - show commandsAndTexts list");
             StringBuilder helpText = new StringBuilder();
             for (CommandsEn commands : CommandsEn.values()) {
                 helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
@@ -282,12 +285,12 @@ public class Bot extends TelegramLongPollingBot {
 
             sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
         } else { // Print help to command and handle it
-            System.out.println("Message text contains / - it's a command");
+            log.info("Message text contains / - it's a command");
             String helpText = "";
 
             for (CommandsEn commands : CommandsEn.values()) {
                 if (messageText.contains(commands.name())) {
-                    System.out.println("Message test contains - command name: " + commands.name());
+                    log.info("Message test contains - command name: " + commands.name());
                     helpText = commands.value;
                 }
             }
@@ -338,11 +341,11 @@ public class Bot extends TelegramLongPollingBot {
 
     private void removeLeftMemberFromNewbieList(int leftUserId) {
         if (MainInit.newbieMapWithAnswer.containsKey(leftUserId)) {
-            System.out.println("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
+            log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
             MainInit.newbieMapWithAnswer.remove(leftUserId);
             MainInit.newbieMapWithJoinTime.remove(leftUserId);
             MainInit.newbieMapWithChatId.remove(leftUserId);
-            System.out.println("Newbie list size: " + +MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+            log.info("Newbie list size: " + +MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
         }
     }
 
@@ -350,12 +353,12 @@ public class Bot extends TelegramLongPollingBot {
 
         if (!update.getMessage().getNewChatMembers().isEmpty()) {
             List<User> newUsersMembersList = update.getMessage().getNewChatMembers();
-            System.out.println("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
+            log.info("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
             Integer messageId = update.getMessage().getMessageId();
 
             for (User user : newUsersMembersList) {
                 if (!user.getBot()) { // Is added users is bot?
-                    System.out.println("User is not bot. Processing.");
+                    log.info("User is not bot. Processing.");
 
                     int userId = user.getId();
                     int randomDigit = (int) (Math.random() * 100);
@@ -368,11 +371,11 @@ public class Bot extends TelegramLongPollingBot {
                     long chatId = update.getMessage().getChatId();
                     MainInit.newbieMapWithChatId.put(userId, chatId);
 
-                    System.out.println("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
+                    log.info("Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
                     sendMessageToChatID(chatId, helloText);
 
                 } else {
-                    System.out.println("User is bot! Ignoring.");
+                    log.info("User is bot! Ignoring.");
                 }
             }
         }
