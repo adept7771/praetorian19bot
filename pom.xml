@@ -70,7 +70,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        MainInit
+                                        Main
                                     </mainClass>
                                 </manifest>
                             </archive>

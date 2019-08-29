@@ -6,12 +6,12 @@ import java.util.*;
 class UserSettingsHandler {
 
     private static final Logger log = Logger.getLogger(UserSettingsHandler.class);
-    private static File settingsFile = new File(MainInit.absolutePath + SettingsForBotGlobal.settingsFileName);
+    private static File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
     public static long lastSettingsSavedTime;
 
     static { // initial check that settings file is exist
 
-        log.info("Absolute path to working dir is: " + MainInit.absolutePath);
+        log.info("Absolute path to working dir is: " + Main.absolutePath);
 
         log.info("Is settings file exists? " + settingsFile.exists());
 
@@ -21,7 +21,7 @@ class UserSettingsHandler {
 
             log.info("List of parameters from settings file is not empty! Initialising in memory.");
 
-            MainInit.userSettingsInMemoryForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
+            Main.userSettingsInMemoryForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
             log.info("Parsed Map with settings from file stored to memory successful");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
@@ -59,7 +59,7 @@ class UserSettingsHandler {
     public String getSetupOptionValueFromMemory(String setupOption, long chatId){
         log.info("Recognizing setup option in memory " + setupOption + " for chat:" + chatId);
         try{
-            String optionValue =  MainInit.userSettingsInMemoryForBot.get(chatId).get(setupOption);
+            String optionValue =  Main.userSettingsInMemoryForBot.get(chatId).get(setupOption);
             log.info("Option value is: " + optionValue);
             return optionValue;
         }
@@ -71,7 +71,7 @@ class UserSettingsHandler {
 
     public boolean compareChatSettingOptionValueInMem(long chatID, String optionNameToCompare, String optionValueToCompare){
         try{
-            return MainInit.userSettingsInMemoryForBot.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
+            return Main.userSettingsInMemoryForBot.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
         }
         catch (Exception e){
             log.info(e.toString());
@@ -95,7 +95,7 @@ class UserSettingsHandler {
             HashMap<String, String> mapWithParametersFromFile = pair.getValue();
 
             try{
-                HashMap<String, String> mapWithParametersFromMemory = MainInit.userSettingsInMemoryForBot.get(chatIDFromFile);
+                HashMap<String, String> mapWithParametersFromMemory = Main.userSettingsInMemoryForBot.get(chatIDFromFile);
                 if(mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)){
                     log.info("SettingsForBotGlobal for bots in memory is equals to settings in current file.");
                     return true;
@@ -126,7 +126,7 @@ class UserSettingsHandler {
             try { // create file if it not exists
                 log.info("File with setting not found. Creating it now.");
                 String data = " ";
-                FileOutputStream out = new FileOutputStream(MainInit.absolutePath + SettingsForBotGlobal.settingsFileName);
+                FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
                 out.write(data.getBytes());
                 out.close();
             } catch (Exception e) {
@@ -136,7 +136,7 @@ class UserSettingsHandler {
             try {
                 log.info("File with setting is found. Initialising it in MEMORY variable.");
 
-                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(MainInit.absolutePath + SettingsForBotGlobal.settingsFileName))));
+                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName))));
 
                 while (fileReader.ready()) {
                     listOfParametersFromSettingsFile.add(fileReader.readLine());
