@@ -13,7 +13,7 @@ public class MainInit {
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
 
     static UserSettingsHandler userSettingsHandler;
-    static HashMap<Long, HashMap<String, String>> userSettingsForBot;
+    public static HashMap<Long, HashMap<String, String>> userSettingsInMemoryForBot;
 
     public static void main(String[] args) {
 

@@ -62,7 +62,7 @@ public class Bot extends TelegramLongPollingBot {
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
         newMembersWarningMessageAndQuestionGeneration
-                ("Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have " + SettingsBotGlobal.timePeriodForSilentUsersByDefault.value + " seconds. How much will be ", update);
+                ("Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have " + SettingsForBotGlobal.timePeriodForSilentUsersByDefault.value + " seconds. How much will be ", update);
 
         // MESSAGES HANDLING ------------------------------------------------------------>
         if (update.hasMessage()) {
@@ -143,7 +143,7 @@ public class Bot extends TelegramLongPollingBot {
 
             log.info("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMainClass + " || Difference: " + (currentDateTime - joinTimeFromMainClass));
 
-            if ((currentDateTime - joinTimeFromMainClass) > Long.valueOf(SettingsBotGlobal.timePeriodForSilentUsersByDefault.value)) {
+            if ((currentDateTime - joinTimeFromMainClass) > Long.valueOf(SettingsForBotGlobal.timePeriodForSilentUsersByDefault.value)) {
 
                 log.info("Difference bigger then defined value! " + userIdFromMainClass + " will be kicked");
                 kickChatMember(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
@@ -282,8 +282,8 @@ public class Bot extends TelegramLongPollingBot {
             for (CommandsEn commands : CommandsEn.values()) {
                 helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
             }
-
             sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
+
         } else { // Print help to command and handle it
             log.info("Message text contains / - it's a command");
             String helpText = "";
@@ -381,22 +381,24 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
+
+
     public String getBotUsername() {
         // Return bot username
-        if (SettingsBotGlobal.botType.value.equals("true")) {
-            return SettingsBotGlobal.nameForProduction.value;
+        if (SettingsForBotGlobal.botType.value.equals("true")) {
+            return SettingsForBotGlobal.nameForProduction.value;
         } else {
-            return SettingsBotGlobal.nameForTest.value;
+            return SettingsForBotGlobal.nameForTest.value;
         }
     }
 
     @Override
     public String getBotToken() {
         // Return bot token from BotFather
-        if (SettingsBotGlobal.botType.value.equals("true")) {
-            return SettingsBotGlobal.tokenForProduction.value;
+        if (SettingsForBotGlobal.botType.value.equals("true")) {
+            return SettingsForBotGlobal.tokenForProduction.value;
         } else {
-            return SettingsBotGlobal.tokenForTest.value;
+            return SettingsForBotGlobal.tokenForTest.value;
         }
     }
 }

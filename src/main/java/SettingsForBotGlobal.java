@@ -1,4 +1,4 @@
-public enum SettingsBotGlobal {
+public enum SettingsForBotGlobal {
 
     botType("false"), // false - test bot and true - production
     timePeriodForSilentUsersByDefault("300"), // time period when newbie can be silent without removing 60 = minute
@@ -15,7 +15,7 @@ public enum SettingsBotGlobal {
 
     public String value;
 
-    SettingsBotGlobal(String value) {
+    SettingsForBotGlobal(String value) {
         this.value = value;
     }
 }
