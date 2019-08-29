@@ -154,7 +154,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 log.info("Silent user removed. Newbie list size: " + MainInit.newbieMapWithAnswer.size() + " " + MainInit.newbieMapWithJoinTime.size() + " " + MainInit.newbieMapWithChatId.size());
 
-                sendMessageToChatID(chatIdFromMainClass, "Silent user was removed after delay. Meow!");
+                sendMessageToChatID(chatIdFromMainClass, userIdFromMainClass + " < silent user was removed after delay. Meow!");
             }
         }
     }
@@ -209,7 +209,7 @@ public class Bot extends TelegramLongPollingBot {
             // DELETE FIRST WRONG MESSAGE FROM USER
             deleteMessage(chatId, messageId);
             kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-            sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+            sendMessageToChatID(chatId, update.getMessage().getFrom().getUserName() + " banned and spamm deleted! Praetorians at your service. Meow!");
 
         } else { // if message contains any text data
 
@@ -249,7 +249,7 @@ public class Bot extends TelegramLongPollingBot {
                     // DELETE FIRST WRONG MESSAGE FROM USER
                     deleteMessage(chatId, messageId);
                     kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                    sendMessageToChatID(chatId, "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+                    sendMessageToChatID(chatId, update.getMessage().getFrom() + " banned and spamm deleted! Praetorians at your service. Meow!");
                 }
             } else { // if message from newbie but not contains digit answer
                 log.info("Message to bot NOT contains any digits. Ban and delete from newbie list.");
@@ -268,7 +268,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
                 deleteMessageAndSayText(chatId, messageId,
-                        "Spammer banned and spamm deleted! Praetorians at your service. Meow!");
+                        update.getMessage().getFrom() + " banned and spamm deleted! Praetorians at your service. Meow!");
             }
         }
 
