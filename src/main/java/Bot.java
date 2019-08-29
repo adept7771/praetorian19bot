@@ -1,14 +1,17 @@
 import commandsAndTexts.commands.CommandsEn;
 import org.apache.log4j.Logger;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +20,11 @@ import java.util.regex.Pattern;
 
 public class Bot extends TelegramLongPollingBot {
 
-    private static final Logger log = Logger.getLogger(Bot.class);
+    public static final Logger log = Logger.getLogger(Bot.class);
+
+    static {
+        log.info("Bot successfully initialised.");
+    }
 
     public void onUpdateReceived(Update update) {
 
@@ -27,7 +34,7 @@ public class Bot extends TelegramLongPollingBot {
         long currentDateTime = (new Date().getTime()) / 1000;
         Pattern pattern = Pattern.compile(regex);
         long chatId = update.getMessage().getChatId();
-        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalPrivateMessageToBot = false;
+        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalpublicMessageToBot = false;
         Message replyMessage = null;
 
         try {
@@ -68,7 +75,7 @@ public class Bot extends TelegramLongPollingBot {
         if (update.hasMessage()) {
 
             String messageText = update.getMessage().getText();
-            Integer messageId = update.getMessage().getMessageId();
+            int messageId = update.getMessage().getMessageId();
 
             // is it reply message contains bot name?
             if (replyMessage != null) {
@@ -96,31 +103,31 @@ public class Bot extends TelegramLongPollingBot {
             // if it personal message in personal direct chat
             try {
                 if (update.getMessage().getChat().isUserChat()) {
-                    isUpdateContainsPersonalPrivateMessageToBot = true;
-                    log.info("Update is private message to bot.");
+                    isUpdateContainsPersonalpublicMessageToBot = true;
+                    log.info("Update is public message to bot.");
                 }
             } catch (Exception e) {
-                isUpdateContainsPersonalPrivateMessageToBot = false;
+                isUpdateContainsPersonalpublicMessageToBot = false;
             }
 
             // ------------- CHECK MENTIONS IN CHAT MESSAGE OR IN REPLY
 
-            if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalPrivateMessageToBot) {
-                // user also can answer in personal private messages to bot
+            if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalpublicMessageToBot) {
+                // user also can answer in personal public messages to bot
 
                 // COMMANDS HANDLING -------------------------------->
                 if (messageText != null && messageText.contains("/")) {
-                    CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPrivateMessageToBot);
+                    CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalpublicMessageToBot, update);
                 }
 
                 // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPrivateMessageToBot) {
+                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
                     validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
                 }
-            } else { // no mentions of bot or personal private messages to him
+            } else { // no mentions of bot or personal public messages to him
 
                 // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPrivateMessageToBot) {
+                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
                     validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
                 }
             }
@@ -132,7 +139,7 @@ public class Bot extends TelegramLongPollingBot {
 
     /* ----------------------------- MAIN METHODS ------------------------------------------------------------ */
 
-    private void checkAndRemoveAllSilentUsers(long currentDateTime) {
+    public void checkAndRemoveAllSilentUsers(long currentDateTime) {
         for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) Main.newbieMapWithAnswer.entrySet()) {
 
             log.info("Iterating newbie lists.");
@@ -159,7 +166,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void kickChatMember(long chatId, int userId, long currentDateTime, int untilDateInSeconds) {
+    public void kickChatMember(long chatId, int userId, long currentDateTime, int untilDateInSeconds) {
         KickChatMember kickChatMember = new KickChatMember();
         kickChatMember.setChatId(chatId)
                 .setUserId(userId)
@@ -167,11 +174,39 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(kickChatMember);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.info("Error while try to kick user " + userId + " in chat id " + chatId + e.toString());
         }
     }
 
-    private int normalizeUserAnswer(String stringToNormalize) {
+    public ArrayList<ChatMember> getChatAdmins(long chatId){
+        GetChatAdministrators getChatAdministrators = new GetChatAdministrators();
+        getChatAdministrators.setChatId(chatId);
+        try {
+            log.info("Getting chat admins in chatId " + chatId);
+            return execute(getChatAdministrators);
+        } catch (Exception e) {
+            log.info("Error while trying to get admins list in chatId " + chatId + " " + e.toString());
+        }
+        return null;
+    }
+
+    public boolean isUserAdminInChat(int userId, long chatId){
+        log.info("Checking user " + userId + " is admin in chat: " + chatId);
+        for(ChatMember chatMember : getChatAdmins(chatId)){
+            if(chatMember.getUser().getId() == userId){
+                log.info("Checked user " + userId + " is admin in chat: " + chatId);
+                return true;
+            }
+            else {
+                log.info("Checked user " + userId + " is NOT admin in chat: " + chatId);
+                return false;
+            }
+        }
+        log.info("Return false by default");
+        return false;
+    }
+
+    public int normalizeUserAnswer(String stringToNormalize) {
         try { // try to normalize string
             String tmpNewbieAnswer = stringToNormalize.replaceAll("\\s", "");
             tmpNewbieAnswer = tmpNewbieAnswer.replaceAll("([a-z])", "");
@@ -184,7 +219,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    private void validateNewbieAnswer(Update update, String messageText, Pattern pattern, long chatId,
+    public void validateNewbieAnswer(Update update, String messageText, Pattern pattern, long chatId,
                                       int messageId, long currentDateTime) {
 
         log.info("User which posted message is NEWBIE. Check initialising.");
@@ -275,7 +310,7 @@ public class Bot extends TelegramLongPollingBot {
 
     }
 
-    private void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage) {
+    public void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage) {
         if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
             log.info("Message text contains /help - show commandsAndTexts list");
             StringBuilder helpText = new StringBuilder();
@@ -283,47 +318,44 @@ public class Bot extends TelegramLongPollingBot {
                 helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
             }
             sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
-
         } else { // Print help to command and handle it
             log.info("Message text contains / - it's a command");
             String helpText = "";
-
             for (CommandsEn commands : CommandsEn.values()) {
                 if (messageText.contains(commands.name())) {
                     log.info("Message test contains - command name: " + commands.name());
                     helpText = commands.value;
                 }
             }
-
             sendReplyMessageToChatID(chatId, helpText, messageId);
-
         }
     }
 
-    private void deleteMessage(long chatId, int messageId) {
+    public void deleteMessage(long chatId, int messageId) {
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(chatId).setMessageId(messageId);
-
         try {
             execute(deleteMessage);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("Error while trying to delete message in chatId " + chatId + " " + e.toString());
         }
     }
 
-    private void deleteMessageAndSayText(long chatId, int messageId, String textToSay) {
+    public void deleteMessageAndSayText(long chatId, int messageId, String textToSay) {
         deleteMessage(chatId, messageId);
         sendMessageToChatID(chatId, textToSay);
     }
 
-    private void sendMessageToChatID(long chatId, String messageText) {
+    public void sendMessageToChatID(long chatId, String messageText) {
+
+
         SendMessage message = new SendMessage()
                 .setChatId(chatId)
                 .setText(messageText);
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.info("Error while trying to send message in chatId " + chatId + " " + e.toString());
         }
     }
 
@@ -335,11 +367,11 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.info("Error while trying to answer in chatId " + chatId + " to message " + replyToMessageId + " " + e.toString());
         }
     }
 
-    private void removeLeftMemberFromNewbieList(int leftUserId) {
+    public void removeLeftMemberFromNewbieList(int leftUserId) {
         if (Main.newbieMapWithAnswer.containsKey(leftUserId)) {
             log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
             Main.newbieMapWithAnswer.remove(leftUserId);

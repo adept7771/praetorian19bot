@@ -1,3 +1,4 @@
+import commandsAndTexts.commands.CommandsEn;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -56,7 +57,7 @@ class UserSettingsHandler {
 
     }
 
-    public String getSetupOptionValueFromMemory(String setupOption, long chatId){
+    static public String getSetupOptionValueFromMemory(String setupOption, long chatId){
         log.info("Recognizing setup option in memory " + setupOption + " for chat:" + chatId);
         try{
             String optionValue =  Main.userSettingsInMemoryForBot.get(chatId).get(setupOption);
@@ -66,6 +67,16 @@ class UserSettingsHandler {
         catch (Exception e){
             log.info("Error while trying to get option from memory " + setupOption + " for chat: " + chatId + " " + e.toString());
             return null;
+        }
+    }
+
+    static String getLanguageToCurrentUser(long chatId){
+        try{
+            return getSetupOptionValueFromMemory(CommandsEn.defaultLanguageAdm.name(), chatId);
+        }
+        catch (Exception e){
+            log.info("Error while trying to getLanguageToCurrentUser for chat: " + chatId + " " + e.toString());
+            return SettingsForBotGlobal.languageByDefault.value;
         }
     }
 

@@ -1,3 +1,4 @@
+import org.apache.log4j.Logger;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -11,6 +12,8 @@ public class Main {
     static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
+
+    public static final Logger log = Logger.getLogger(Main.class);
 
     public static Bot bot;
 
@@ -27,6 +30,7 @@ public class Main {
 
         // Register our bot
         try {
+            log.info("Bot initialising.");
             botsApi.registerBot(bot = new Bot());
         } catch (TelegramApiException e) {
             e.printStackTrace();

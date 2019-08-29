@@ -8,9 +8,8 @@ public enum CommandsEn {
             "If newbie will appear in chat bot will " +
             "contact with him and ask few questions. If new member will answer it right - bot will give him send message rights." +
             " Also silent members who not wrote any messages in short period after joining to chat should be removed by bot." +
-            " For your and chat members convenience all settings of bot can be tunned in personal messages. " +
             " \n\n >>>>>>>>> ATTENTION: you must give to bot all admin rights"),
-    defaultLanguageAdm("Language for all users by default. Admin settings. Example usage: /defaultLanguageEn. Supported: En, Ru"),
+    defaultLanguageAdm("Language for all users by default. Admin settings. Example usage: /defaultLanguageAdmEn /defaultLanguageAdmRu. Supported: En, Ru"),
     //autocheckLanguageForAll("This option will make bot to recognize user's language from update if it no defined by user. But if it NULL will used GLOBAL language setting for user."),
     ;
 
