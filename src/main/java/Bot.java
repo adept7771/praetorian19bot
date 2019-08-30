@@ -1,4 +1,3 @@
-import commandsAndTexts.commands.CommandsEn;
 import commandsAndTexts.texts.EnTexts;
 import commandsAndTexts.texts.RuTexts;
 import org.apache.log4j.Logger;
@@ -26,7 +25,7 @@ public class Bot extends TelegramLongPollingBot {
     public static Update currentUpdate;
 
     static {
-        log.info("Bot successfully initialised.");
+        log.info("Bot successfully initialised :3 ");
     }
 
     public void onUpdateReceived(Update update) {
@@ -107,7 +106,7 @@ public class Bot extends TelegramLongPollingBot {
             try {
                 if (update.getMessage().getChat().isUserChat()) {
                     isUpdateContainsPersonalpublicMessageToBot = true;
-                    log.info("Update is public message to bot.");
+                    log.info("Update is public message to bot in chat.");
                 }
             } catch (Exception e) {
                 isUpdateContainsPersonalpublicMessageToBot = false;
@@ -163,8 +162,8 @@ public class Bot extends TelegramLongPollingBot {
                 Main.newbieMapWithChatId.remove(userIdFromMainClass);
 
                 log.info("Silent user removed. Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-
-                sendMessageToChatID(chatIdFromMainClass, userIdFromMainClass + " < silent user was removed after delay. Meow!");
+                String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
+                sendMessageToChatID(chatIdFromMainClass, userIdFromMainClass + textToSay);
             }
         }
     }
@@ -181,7 +180,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public ArrayList<ChatMember> getChatAdmins(long chatId){
+    public ArrayList<ChatMember> getChatAdmins(long chatId) {
         GetChatAdministrators getChatAdministrators = new GetChatAdministrators();
         getChatAdministrators.setChatId(chatId);
         try {
@@ -190,22 +189,22 @@ public class Bot extends TelegramLongPollingBot {
         } catch (Exception e) {
             log.info("Error while trying to get admins list in chatId " + chatId + " " + e.toString());
         }
+        log.info("Something going wrong while try to get chat admins (return null) in chatId " + chatId);
         return null;
     }
 
-    public boolean isUserAdminInChat(int userId, long chatId){
+    public boolean isUserAdminInChat(int userId, long chatId) {
         log.info("Checking user " + userId + " is admin in chat: " + chatId);
-        for(ChatMember chatMember : getChatAdmins(chatId)){
-            if(chatMember.getUser().getId() == userId){
+        for (ChatMember chatMember : getChatAdmins(chatId)) {
+            if (chatMember.getUser().getId() == userId) {
                 log.info("Checked user " + userId + " is admin in chat: " + chatId);
                 return true;
-            }
-            else {
+            } else {
                 log.info("Checked user " + userId + " is NOT admin in chat: " + chatId);
                 return false;
             }
         }
-        log.info("Return false by default");
+        log.info("Error while trying to get admin status. Return false by default.");
         return false;
     }
 
@@ -218,12 +217,13 @@ public class Bot extends TelegramLongPollingBot {
             tmpNewbieAnswer = tmpNewbieAnswer.replaceAll("([А-Я])", "");
             return Integer.valueOf(tmpNewbieAnswer);
         } catch (NumberFormatException e) {
+            log.info("Can't normalize string. Return 0 by default.");
             return 0;
         }
     }
 
     public void validateNewbieAnswer(Update update, String messageText, Pattern pattern, long chatId,
-                                      int messageId, long currentDateTime) {
+                                     int messageId, long currentDateTime) {
 
         log.info("User which posted message is NEWBIE. Check initialising.");
 
@@ -240,8 +240,7 @@ public class Bot extends TelegramLongPollingBot {
 
             log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-            answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
-
+            answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
             sendReplyMessageToChatID(chatId, answerText, messageId);
 
             // DELETE FIRST WRONG MESSAGE FROM USER
@@ -252,9 +251,7 @@ public class Bot extends TelegramLongPollingBot {
         } else { // if message contains any text data
 
             currentNewbieAnswer = normalizeUserAnswer(messageText);
-
             log.info("Normalized newbie answer is: " + currentNewbieAnswer);
-
             Matcher matcher = pattern.matcher(messageText); // contain at least digits
 
             if (matcher.matches()) { // if contains at least digits
@@ -268,7 +265,7 @@ public class Bot extends TelegramLongPollingBot {
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                    answerText += "Right! Now you can send messages to group. Have a nice chatting.";
+                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(), chatId);;
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
@@ -280,14 +277,15 @@ public class Bot extends TelegramLongPollingBot {
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                    answerText += "Wrong. Sorry entered data is not match with generated one. You will be banned!";
+                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
                     // DELETE FIRST WRONG MESSAGE FROM USER
                     deleteMessage(chatId, messageId);
                     kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                    sendMessageToChatID(chatId, update.getMessage().getFrom() + " banned and spamm deleted! Praetorians at your service. Meow!");
+                    String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
+                    sendMessageToChatID(chatId, update.getMessage().getFrom() + bannedTextMessage);
                 }
             } else { // if message from newbie but not contains digit answer
                 log.info("Message to bot NOT contains any digits. Ban and delete from newbie list.");
@@ -301,37 +299,15 @@ public class Bot extends TelegramLongPollingBot {
                 log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                 kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                sendReplyMessageToChatID(chatId,
-                        "Wrong. Sorry entered DATA contains only letters. You will be banned!", messageId);
+                sendReplyMessageToChatID(chatId, EnTexts.newbieAnswerContainsOnlyLetters.name(), messageId, true);
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
-                deleteMessageAndSayText(chatId, messageId,
-                        update.getMessage().getFrom() + " banned and spamm deleted! Praetorians at your service. Meow!");
+                String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
+                deleteMessageAndSayText(chatId, messageId,update.getMessage().getFrom() + bannedTextMessage);
             }
         }
 
 
-    }
-
-    public void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage) {
-        if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
-            log.info("Message text contains /help - show commandsAndTexts list");
-            StringBuilder helpText = new StringBuilder();
-            for (CommandsEn commands : CommandsEn.values()) {
-                helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
-            }
-            sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
-        } else { // Print help to command and handle it
-            log.info("Message text contains / - it's a command");
-            String helpText = "";
-            for (CommandsEn commands : CommandsEn.values()) {
-                if (messageText.contains(commands.name())) {
-                    log.info("Message test contains - command name: " + commands.name());
-                    helpText = commands.value;
-                }
-            }
-            sendReplyMessageToChatID(chatId, helpText, messageId);
-        }
     }
 
     public void deleteMessage(long chatId, int messageId) {
@@ -350,6 +326,10 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendMessageToChatID(long chatId, String messageText) {
+        if (messageText == null || messageText.equals("")) {
+            log.info("Send text for message is empty. Nothing to say.");
+            return;
+        }
         SendMessage message = new SendMessage()
                 .setChatId(chatId)
                 .setText(messageText);
@@ -362,17 +342,32 @@ public class Bot extends TelegramLongPollingBot {
 
     public void sendMessageToChatID(long chatId, String messageText, boolean messageTextIsTemplateText) {
         String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
-        if(language.contains("ru") && messageTextIsTemplateText){
+        if (language.contains("ru") && messageTextIsTemplateText) {
             sendMessageToChatID(chatId, RuTexts.valueOf(messageText).toString());
-        } else if(language.contains("en") && messageTextIsTemplateText){
+        } else if (language.contains("en") && messageTextIsTemplateText) {
             sendMessageToChatID(chatId, EnTexts.valueOf(messageText).toString());
-        }
-        else {
+        } else {
             sendMessageToChatID(chatId, messageText);
         }
     }
 
+    public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
+        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        if (language.contains("ru")) {
+            return RuTexts.valueOf(templateTextName).toString();
+        } else if (language.contains("en")) {
+            return EnTexts.valueOf(templateTextName).toString();
+        } else {
+            log.info("Sorry no template text found for language " + language + " for phrase template " + templateTextName);
+            return null;
+        }
+    }
+
     public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId) {
+        if (messageText == null || messageText.equals("")) {
+            log.info("Send text for message is empty. Nothing to say in reply.");
+            return;
+        }
         SendMessage message = new SendMessage()
                 .setChatId(chatId)
                 .setReplyToMessageId(replyToMessageId)
@@ -386,12 +381,11 @@ public class Bot extends TelegramLongPollingBot {
 
     public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
         String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
-        if(language.contains("ru") && messageTextIsTemplateText){
+        if (language.contains("ru") && messageTextIsTemplateText) {
             sendReplyMessageToChatID(chatId, RuTexts.valueOf(messageText).toString(), replyToMessageId);
-        } else if(language.contains("en") && messageTextIsTemplateText){
+        } else if (language.contains("en") && messageTextIsTemplateText) {
             sendReplyMessageToChatID(chatId, EnTexts.valueOf(messageText).toString(), replyToMessageId);
-        }
-        else {
+        } else {
             sendReplyMessageToChatID(chatId, messageText, replyToMessageId);
         }
 
@@ -429,17 +423,15 @@ public class Bot extends TelegramLongPollingBot {
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                    // Send warning greetings message with generated numbers
-                    sendMessageToChatID(chatId, warningMessage, true);
-                    sendMessageToChatID(chatId, randomDigit + " + " + randomDigit2);
+                    // Send warning greetings message with generated digits
+                    warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
+                    sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2);
                 } else {
                     log.info("User is bot! Ignoring.");
                 }
             }
         }
     }
-
-
 
     public String getBotUsername() {
         // Return bot username
