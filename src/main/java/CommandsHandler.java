@@ -51,7 +51,7 @@ public class CommandsHandler {
     }
 
     public static void recognizeAndHandleCommand(String command, boolean isUpdatePersonalDirectMessage, long chatId, Update update) {
-        // default language command for bot
+        // handle default language command for bot
         if (command.toLowerCase().contains(CommandsEn.defaultLanguageAdm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) {
             if(Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)){
                 // if user admin in chat

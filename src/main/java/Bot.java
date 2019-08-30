@@ -195,16 +195,15 @@ public class Bot extends TelegramLongPollingBot {
 
     public boolean isUserAdminInChat(int userId, long chatId) {
         log.info("Checking user " + userId + " is admin in chat: " + chatId);
-        for (ChatMember chatMember : getChatAdmins(chatId)) {
-            if (chatMember.getUser().getId() == userId) {
+        ArrayList<ChatMember> adminsList = getChatAdmins(chatId);
+        for (ChatMember chatMember : adminsList) {
+            int chatMemberIdFromList = chatMember.getUser().getId();
+            if (chatMemberIdFromList == userId) {
                 log.info("Checked user " + userId + " is admin in chat: " + chatId);
                 return true;
-            } else {
-                log.info("Checked user " + userId + " is NOT admin in chat: " + chatId);
-                return false;
             }
         }
-        log.info("Error while trying to get admin status. Return false by default.");
+        log.info("Error while trying to get admin status or user isn't in admin list. Return false by default.");
         return false;
     }
 
@@ -374,7 +373,6 @@ public class Bot extends TelegramLongPollingBot {
         } else {
             sendReplyMessageToChatID(chatId, messageText, replyToMessageId);
         }
-
     }
 
     public void removeLeftMemberFromNewbieList(int leftUserId) {
