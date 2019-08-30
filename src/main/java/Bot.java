@@ -72,8 +72,7 @@ public class Bot extends TelegramLongPollingBot {
         checkAndRemoveAllSilentUsers(currentDateTime);
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
-        newMembersWarningMessageAndQuestionGeneration
-                ("Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. You have " + SettingsForBotGlobal.timePeriodForSilentUsersByDefault.value + " seconds. How much will be ", update);
+        newMembersWarningMessageAndQuestionGeneration(EnTexts.defaultGreetings.name(), update);
 
         // MESSAGES HANDLING ------------------------------------------------------------>
         if (update.hasMessage()) {
@@ -385,6 +384,19 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
+    public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
+        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        if(language.contains("ru") && messageTextIsTemplateText){
+            sendReplyMessageToChatID(chatId, RuTexts.valueOf(messageText).toString(), replyToMessageId);
+        } else if(language.contains("en") && messageTextIsTemplateText){
+            sendReplyMessageToChatID(chatId, EnTexts.valueOf(messageText).toString(), replyToMessageId);
+        }
+        else {
+            sendReplyMessageToChatID(chatId, messageText, replyToMessageId);
+        }
+
+    }
+
     public void removeLeftMemberFromNewbieList(int leftUserId) {
         if (Main.newbieMapWithAnswer.containsKey(leftUserId)) {
             log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
@@ -396,7 +408,6 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void newMembersWarningMessageAndQuestionGeneration(String warningMessage, Update update) {
-
         if (!update.getMessage().getNewChatMembers().isEmpty()) {
             List<User> newUsersMembersList = update.getMessage().getNewChatMembers();
             log.info("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
@@ -410,7 +421,6 @@ public class Bot extends TelegramLongPollingBot {
                     int randomDigit = (int) (Math.random() * 100);
                     int randomDigit2 = (int) (Math.random() * 100);
                     int answerDigit = randomDigit + randomDigit2;
-                    String helloText = warningMessage + " " + randomDigit + " + " + randomDigit2;
 
                     Main.newbieMapWithAnswer.put(userId, answerDigit);
                     Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
@@ -418,8 +428,10 @@ public class Bot extends TelegramLongPollingBot {
                     Main.newbieMapWithChatId.put(userId, chatId);
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-                    sendMessageToChatID(chatId, helloText);
 
+                    // Send warning greetings message with generated numbers
+                    sendMessageToChatID(chatId, warningMessage, true);
+                    sendMessageToChatID(chatId, randomDigit + " + " + randomDigit2);
                 } else {
                     log.info("User is bot! Ignoring.");
                 }

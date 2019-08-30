@@ -1,4 +1,5 @@
 import commandsAndTexts.commands.CommandsEn;
+import commandsAndTexts.commands.CommandsRu;
 import commandsAndTexts.texts.EnTexts;
 import org.apache.log4j.Logger;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -8,14 +9,24 @@ public class CommandsHandler {
     private static final Logger log = Logger.getLogger(CommandsHandler.class);
 
     public static void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage, Update update) {
+
+        String currentChatLanguage = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+
         if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
             log.info("Message text contains /help - show commandsAndTexts list");
             StringBuilder helpText = new StringBuilder();
-            for (CommandsEn commands : CommandsEn.values()) {
-                helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
+
+            if(currentChatLanguage.contains("en")){
+                for (CommandsEn commands : CommandsEn.values()) {
+                    helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
+                }
+            }
+            else if(currentChatLanguage.contains("ru")){
+                for (CommandsRu commands : CommandsRu.values()) {
+                    helpText.append("/").append(commands.name()).append(" ---> ").append(commands.value).append(" \n\n");
+                }
             }
             Main.bot.sendReplyMessageToChatID(chatId, helpText.toString(), messageId);
-
         } else { // Print help to command and handle it
             log.info("Message text contains / - it's CAN be a command");
             String helpText = "";
@@ -46,7 +57,7 @@ public class CommandsHandler {
 
             }
             else { // if not an admin
-                Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name());
+                Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name(), true);
             }
 
             if (command.contains("En")) {

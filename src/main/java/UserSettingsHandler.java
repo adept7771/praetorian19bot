@@ -7,7 +7,7 @@ import java.util.*;
 class UserSettingsHandler {
 
     private static final Logger log = Logger.getLogger(UserSettingsHandler.class);
-    private static File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
+    private static File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
     public static long lastSettingsSavedTime;
 
     static { // initial check that settings file is exist
@@ -18,9 +18,9 @@ class UserSettingsHandler {
 
         ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
 
-        if (!listOfParametersFromSettingsFile.isEmpty()) {
+        if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ") && !(listOfParametersFromSettingsFile.get(0).length() > 5)) {
 
-            log.info("List of parameters from settings file is not empty! Initialising in memory.");
+            log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
 
             Main.userSettingsInMemoryForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
@@ -71,12 +71,14 @@ class UserSettingsHandler {
     }
 
     static String getLanguageToCurrentUser(long chatId){
-        try{
-            return getSetupOptionValueFromMemory(CommandsEn.defaultLanguageAdm.name(), chatId);
-        }
-        catch (Exception e){
-            log.info("Error while trying to getLanguageToCurrentUser for chat: " + chatId + " " + e.toString());
+        log.info("Try to get language option value for chat id: " + chatId);
+        String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultLanguageAdm.toString(), chatId);
+        log.info("It is: " + languageOption);
+        if(languageOption == null){
             return SettingsForBotGlobal.languageByDefault.value;
+        }
+        else {
+            return languageOption;
         }
     }
 
@@ -137,7 +139,7 @@ class UserSettingsHandler {
             try { // create file if it not exists
                 log.info("File with setting not found. Creating it now.");
                 String data = " ";
-                FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
+                FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
                 out.write(data.getBytes());
                 out.close();
             } catch (Exception e) {
@@ -147,7 +149,7 @@ class UserSettingsHandler {
             try {
                 log.info("File with setting is found. Initialising it in MEMORY variable.");
 
-                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName))));
+                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value))));
 
                 while (fileReader.ready()) {
                     listOfParametersFromSettingsFile.add(fileReader.readLine());

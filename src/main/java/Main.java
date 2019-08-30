@@ -17,7 +17,7 @@ public class Main {
 
     public static Bot bot;
 
-    static UserSettingsHandler userSettingsHandler;
+    static UserSettingsHandler userSettingsHandler = new UserSettingsHandler();
     public static HashMap<Long, HashMap<String, String>> userSettingsInMemoryForBot;
 
     public static void main(String[] args) {
