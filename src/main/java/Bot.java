@@ -306,8 +306,6 @@ public class Bot extends TelegramLongPollingBot {
                 deleteMessageAndSayText(chatId, messageId,update.getMessage().getFrom() + bannedTextMessage);
             }
         }
-
-
     }
 
     public void deleteMessage(long chatId, int messageId) {
@@ -343,23 +341,11 @@ public class Bot extends TelegramLongPollingBot {
     public void sendMessageToChatID(long chatId, String messageText, boolean messageTextIsTemplateText) {
         String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
-            sendMessageToChatID(chatId, RuTexts.valueOf(messageText).toString());
+            sendMessageToChatID(chatId, RuTexts.getValueForKey(messageText));
         } else if (language.contains("en") && messageTextIsTemplateText) {
-            sendMessageToChatID(chatId, EnTexts.valueOf(messageText).toString());
+            sendMessageToChatID(chatId, EnTexts.getValueForKey(messageText));
         } else {
             sendMessageToChatID(chatId, messageText);
-        }
-    }
-
-    public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
-        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
-        if (language.contains("ru")) {
-            return RuTexts.valueOf(templateTextName).toString();
-        } else if (language.contains("en")) {
-            return EnTexts.valueOf(templateTextName).toString();
-        } else {
-            log.info("Sorry no template text found for language " + language + " for phrase template " + templateTextName);
-            return null;
         }
     }
 
@@ -382,9 +368,9 @@ public class Bot extends TelegramLongPollingBot {
     public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
         String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
-            sendReplyMessageToChatID(chatId, RuTexts.valueOf(messageText).toString(), replyToMessageId);
+            sendReplyMessageToChatID(chatId, RuTexts.getValueForKey(messageText), replyToMessageId);
         } else if (language.contains("en") && messageTextIsTemplateText) {
-            sendReplyMessageToChatID(chatId, EnTexts.valueOf(messageText).toString(), replyToMessageId);
+            sendReplyMessageToChatID(chatId, EnTexts.getValueForKey(messageText), replyToMessageId);
         } else {
             sendReplyMessageToChatID(chatId, messageText, replyToMessageId);
         }
@@ -430,6 +416,18 @@ public class Bot extends TelegramLongPollingBot {
                     log.info("User is bot! Ignoring.");
                 }
             }
+        }
+    }
+
+    public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
+        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        if (language.contains("ru")) {
+            return RuTexts.valueOf(templateTextName).toString();
+        } else if (language.contains("en")) {
+            return EnTexts.valueOf(templateTextName).toString();
+        } else {
+            log.info("Sorry no template text found for language " + language + " for phrase template " + templateTextName);
+            return null;
         }
     }
 

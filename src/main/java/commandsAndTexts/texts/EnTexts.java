@@ -16,4 +16,13 @@ public enum EnTexts {
     EnTexts(String value) {
         this.value = value;
     }
+
+    public static String getValueForKey(String key){
+        for(EnTexts text : values()){
+            if(text.toString().equals(key)){
+                return text.value;
+            }
+        }
+        return null;
+    }
 }

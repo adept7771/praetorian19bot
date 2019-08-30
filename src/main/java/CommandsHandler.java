@@ -51,20 +51,19 @@ public class CommandsHandler {
     }
 
     public static void recognizeAndHandleCommand(String command, boolean isUpdatePersonalDirectMessage, long chatId, Update update) {
-        if (command.toLowerCase().contains(CommandsEn.defaultLanguageAdm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) { // language option for bot
+        // default language command for bot
+        if (command.toLowerCase().contains(CommandsEn.defaultLanguageAdm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) {
             if(Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)){
                 // if user admin in chat
-
+                if (command.contains("En")) {
+                    System.out.println("Command contains En");
+                }
+                else if (command.contains("Ru")) {
+                    System.out.println("Command contains Ru");
+                }
             }
             else { // if not an admin
                 Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name(), true);
-            }
-
-            if (command.contains("En")) {
-                System.out.println("Command contains En");
-            }
-            else if (command.contains("Ru")) {
-                System.out.println("Command contains Ru");
             }
         }
     }

@@ -16,4 +16,13 @@ public enum RuTexts {
     RuTexts(String value) {
         this.value = value;
     }
+
+    public static String getValueForKey(String key){
+        for(RuTexts text : values()){
+            if(text.toString().equals(key)){
+                return text.value;
+            }
+        }
+        return null;
+    }
 }
