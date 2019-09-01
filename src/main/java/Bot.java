@@ -71,7 +71,7 @@ public class Bot extends TelegramLongPollingBot {
         checkAndRemoveAllSilentUsers(currentDateTime);
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
-        newMembersWarningMessageAndQuestionGeneration(EnTexts.defaultGreetings.name(), update);
+        newMembersWarningMessageAndQuestionGeneration();
 
         // MESSAGES HANDLING ------------------------------------------------------------>
         if (update.hasMessage()) {
@@ -385,11 +385,11 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void newMembersWarningMessageAndQuestionGeneration(String warningMessage, Update update) {
-        if (!update.getMessage().getNewChatMembers().isEmpty()) {
-            List<User> newUsersMembersList = update.getMessage().getNewChatMembers();
+    public void newMembersWarningMessageAndQuestionGeneration() {
+        if (!Bot.currentUpdate.getMessage().getNewChatMembers().isEmpty()) {
+            List<User> newUsersMembersList = Bot.currentUpdate.getMessage().getNewChatMembers();
             log.info("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
-            Integer messageId = update.getMessage().getMessageId();
+            Integer messageId = Bot.currentUpdate.getMessage().getMessageId();
 
             for (User user : newUsersMembersList) {
                 if (!user.getBot()) { // Is added users is bot?
@@ -402,13 +402,13 @@ public class Bot extends TelegramLongPollingBot {
 
                     Main.newbieMapWithAnswer.put(userId, answerDigit);
                     Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
-                    long chatId = update.getMessage().getChatId();
+                    long chatId = Bot.currentUpdate.getMessage().getChatId();
                     Main.newbieMapWithChatId.put(userId, chatId);
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                     // Send warning greetings message with generated digits
-                    warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
+                    String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
                     sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2);
                 } else {
                     log.info("User is bot! Ignoring.");
@@ -420,9 +420,9 @@ public class Bot extends TelegramLongPollingBot {
     public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
         String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
         if (language.contains("ru")) {
-            return RuTexts.valueOf(templateTextName).toString();
+            return RuTexts.getValueForKey(templateTextName);
         } else if (language.contains("en")) {
-            return EnTexts.valueOf(templateTextName).toString();
+            return EnTexts.getValueForKey(templateTextName);
         } else {
             log.info("Sorry no template text found for language " + language + " for phrase template " + templateTextName);
             return null;

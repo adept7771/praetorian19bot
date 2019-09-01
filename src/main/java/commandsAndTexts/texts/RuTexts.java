@@ -9,6 +9,7 @@ public enum RuTexts {
     newbieAnswerNotEqualsToGeneratedOne(" Не правильно. Сожалеем, но вы дали не правильный ответ, вы будете изгнаны! "),
     newbieCheckSuccess(" Верно! Теперь вы можете писать в группу. Приятного общения. "),
     newbieAnswerContainsOnlyLetters("  Ошибка. Введенные данные содержат только буквы. Вы будете изгнаны! "),
+    changeDefaultLanguage(" Язык успешно изменен "),
     ;
 
     public String value;

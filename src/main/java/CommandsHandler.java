@@ -56,10 +56,10 @@ public class CommandsHandler {
             if(Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)){
                 // if user admin in chat
                 if (command.contains("En")) {
-                    System.out.println("Command contains En");
+                    log.info("Default language to chat " + chatId + " was changed to En");
                 }
                 else if (command.contains("Ru")) {
-                    System.out.println("Command contains Ru");
+                    log.info("Default language to chat " + chatId + " was changed to Ru");
                 }
             }
             else { // if not an admin

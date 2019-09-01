@@ -54,7 +54,18 @@ class UserSettingsHandler {
 
     public static void storeSettingsFromMemoryToFile() {
 
+    }
 
+    static public void setSetupOptionValueInMemory(String setupOptionName, String setupOptionValue, long chatId){
+        HashMap<String, String> optionsToStore = new HashMap<String, String>();
+        optionsToStore.put(setupOptionName, setupOptionValue);
+        if(getSetupOptionValueFromMemory(setupOptionName, chatId) == null){
+            Main.userSettingsInMemoryForBot.put(chatId, optionsToStore);
+        }
+        else {
+            Main.userSettingsInMemoryForBot.get(chatId).put(setupOptionName, setupOptionValue);
+        }
+        log.info("Setup option " + setupOptionName + " for chat:" + chatId + " was set.");
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId){
