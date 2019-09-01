@@ -71,71 +71,75 @@ public class Bot extends TelegramLongPollingBot {
         checkAndRemoveAllSilentUsers(currentDateTime);
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
-        newMembersWarningMessageAndQuestionGeneration();
+        if (!Bot.currentUpdate.getMessage().getNewChatMembers().isEmpty()) {
+            newMembersWarningMessageAndQuestionGeneration();
+        }
+        else {
 
-        // MESSAGES HANDLING ------------------------------------------------------------>
-        if (update.hasMessage()) {
+            // MESSAGES HANDLING ------------------------------------------------------------>
+            if (update.hasMessage()) {
 
-            String messageText = update.getMessage().getText();
-            int messageId = update.getMessage().getMessageId();
+                String messageText = update.getMessage().getText();
+                int messageId = update.getMessage().getMessageId();
 
-            // is it reply message contains bot name?
-            if (replyMessage != null) {
+                // is it reply message contains bot name?
+                if (replyMessage != null) {
+                    try {
+                        log.info("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
+                        replyMessageInChatContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
+                    } catch (Exception e) {
+                        replyMessageInChatContainsBotName = false;
+                    } finally {
+                        log.info("Is reply message name contains bot name status: " + replyMessageInChatContainsBotName);
+                    }
+                }
+
+                // if it direct message in chat, check that message contains bot name
                 try {
-                    log.info("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
-                    replyMessageInChatContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
-                } catch (Exception e) {
-                    replyMessageInChatContainsBotName = false;
+                    messageInChatContainsBotName = messageText.contains("@" + getBotUsername());
+                } catch (NullPointerException e) {
+                    messageInChatContainsBotName = false;
                 } finally {
-                    log.info("Is reply message name contains bot name status: " + replyMessageInChatContainsBotName);
+                    if (replyMessage == null) {
+                        log.info("Chat message contains praetorian bot name: " + messageInChatContainsBotName);
+                    }
                 }
+
+                // if it personal message in personal direct chat
+                try {
+                    if (update.getMessage().getChat().isUserChat()) {
+                        isUpdateContainsPersonalpublicMessageToBot = true;
+                        log.info("Update is public message to bot in chat.");
+                    }
+                } catch (Exception e) {
+                    isUpdateContainsPersonalpublicMessageToBot = false;
+                }
+
+                // ------------- CHECK MENTIONS IN CHAT MESSAGE OR IN REPLY
+
+                if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalpublicMessageToBot) {
+                    // user also can answer in personal public messages to bot
+
+                    // COMMANDS HANDLING -------------------------------->
+                    if (messageText != null && messageText.contains("/")) {
+                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalpublicMessageToBot, update);
+                    }
+
+                    // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
+                    if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
+                        validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
+                    }
+                } else { // no mentions of bot or personal public messages to him
+
+                    // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
+                    if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
+                        validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
+                    }
+                }
+
+            } else { // If we get update without message
+
             }
-
-            // if it direct message in chat, check that message contains bot name
-            try {
-                messageInChatContainsBotName = messageText.contains("@" + getBotUsername());
-            } catch (NullPointerException e) {
-                messageInChatContainsBotName = false;
-            } finally {
-                if (replyMessage == null) {
-                    log.info("Chat message contains praetorian bot name: " + messageInChatContainsBotName);
-                }
-            }
-
-            // if it personal message in personal direct chat
-            try {
-                if (update.getMessage().getChat().isUserChat()) {
-                    isUpdateContainsPersonalpublicMessageToBot = true;
-                    log.info("Update is public message to bot in chat.");
-                }
-            } catch (Exception e) {
-                isUpdateContainsPersonalpublicMessageToBot = false;
-            }
-
-            // ------------- CHECK MENTIONS IN CHAT MESSAGE OR IN REPLY
-
-            if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalpublicMessageToBot) {
-                // user also can answer in personal public messages to bot
-
-                // COMMANDS HANDLING -------------------------------->
-                if (messageText != null && messageText.contains("/")) {
-                    CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalpublicMessageToBot, update);
-                }
-
-                // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
-                    validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
-                }
-            } else { // no mentions of bot or personal public messages to him
-
-                // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                if (Main.newbieMapWithAnswer.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
-                    validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
-                }
-            }
-
-        } else { // If we get update without message
-
         }
     }
 
@@ -264,7 +268,8 @@ public class Bot extends TelegramLongPollingBot {
 
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(), chatId);;
+                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(), chatId);
+                    ;
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
@@ -302,7 +307,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
                 String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
-                deleteMessageAndSayText(chatId, messageId,update.getMessage().getFrom() + bannedTextMessage);
+                deleteMessageAndSayText(chatId, messageId, update.getMessage().getFrom() + bannedTextMessage);
             }
         }
     }
@@ -386,33 +391,32 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void newMembersWarningMessageAndQuestionGeneration() {
-        if (!Bot.currentUpdate.getMessage().getNewChatMembers().isEmpty()) {
-            List<User> newUsersMembersList = Bot.currentUpdate.getMessage().getNewChatMembers();
-            log.info("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
-            Integer messageId = Bot.currentUpdate.getMessage().getMessageId();
 
-            for (User user : newUsersMembersList) {
-                if (!user.getBot()) { // Is added users is bot?
-                    log.info("User is not bot. Processing.");
+        List<User> newUsersMembersList = Bot.currentUpdate.getMessage().getNewChatMembers();
+        log.info("We have an update with a new chat members (" + newUsersMembersList.size() + ")");
+        Integer messageId = Bot.currentUpdate.getMessage().getMessageId();
 
-                    int userId = user.getId();
-                    int randomDigit = (int) (Math.random() * 100);
-                    int randomDigit2 = (int) (Math.random() * 100);
-                    int answerDigit = randomDigit + randomDigit2;
+        for (User user : newUsersMembersList) {
+            if (!user.getBot()) { // Is added users is bot?
+                log.info("User is not bot. Processing.");
 
-                    Main.newbieMapWithAnswer.put(userId, answerDigit);
-                    Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
-                    long chatId = Bot.currentUpdate.getMessage().getChatId();
-                    Main.newbieMapWithChatId.put(userId, chatId);
+                int userId = user.getId();
+                int randomDigit = (int) (Math.random() * 100);
+                int randomDigit2 = (int) (Math.random() * 100);
+                int answerDigit = randomDigit + randomDigit2;
 
-                    log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                Main.newbieMapWithAnswer.put(userId, answerDigit);
+                Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
+                long chatId = Bot.currentUpdate.getMessage().getChatId();
+                Main.newbieMapWithChatId.put(userId, chatId);
 
-                    // Send warning greetings message with generated digits
-                    String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
-                    sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2);
-                } else {
-                    log.info("User is bot! Ignoring.");
-                }
+                log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+
+                // Send warning greetings message with generated digits
+                String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
+                sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2);
+            } else {
+                log.info("User is bot! Ignoring.");
             }
         }
     }
