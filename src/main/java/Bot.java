@@ -249,7 +249,7 @@ public class Bot extends TelegramLongPollingBot {
             // DELETE FIRST WRONG MESSAGE FROM USER
             deleteMessage(chatId, messageId);
             kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-            sendMessageToChatID(chatId, update.getMessage().getFrom().getUserName() + " banned and spamm deleted! Praetorians at your service. Meow!");
+            sendMessageToChatID(chatId, getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId));
 
         } else { // if message contains any text data
 
@@ -269,7 +269,6 @@ public class Bot extends TelegramLongPollingBot {
                     log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                     answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(), chatId);
-                    ;
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
@@ -289,7 +288,8 @@ public class Bot extends TelegramLongPollingBot {
                     deleteMessage(chatId, messageId);
                     kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
                     String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
-                    sendMessageToChatID(chatId, update.getMessage().getFrom() + bannedTextMessage);
+
+                    sendMessageToChatID(chatId, bannedTextMessage);
                 }
             } else { // if message from newbie but not contains digit answer
                 log.info("Message to bot NOT contains any digits. Ban and delete from newbie list.");
@@ -307,7 +307,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
                 String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
-                deleteMessageAndSayText(chatId, messageId, update.getMessage().getFrom() + bannedTextMessage);
+                deleteMessageAndSayText(chatId, messageId, bannedTextMessage);
             }
         }
     }
@@ -386,7 +386,7 @@ public class Bot extends TelegramLongPollingBot {
             Main.newbieMapWithAnswer.remove(leftUserId);
             Main.newbieMapWithJoinTime.remove(leftUserId);
             Main.newbieMapWithChatId.remove(leftUserId);
-            log.info("Newbie list size: " + +Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+            log.info("Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
         }
     }
 
