@@ -19,6 +19,7 @@ class UserSettingsHandler {
         ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
 
         if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ") && !(listOfParametersFromSettingsFile.get(0).length() > 5)) {
+        // if setting file not empty we must parse in into map
 
             log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
 
@@ -27,7 +28,7 @@ class UserSettingsHandler {
             log.info("Parsed Map with settings from file stored to memory successful");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
 
-        } else { // if file with setting is empty
+        } else { // if file with setting is empty do nothing
 
             log.info("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
             UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
@@ -65,7 +66,7 @@ class UserSettingsHandler {
         else {
             Main.userSettingsInMemoryForBot.get(chatId).put(setupOptionName, setupOptionValue);
         }
-        log.info("Setup option " + setupOptionName + " for chat:" + chatId + " was set.");
+        log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set.");
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId){
@@ -84,7 +85,6 @@ class UserSettingsHandler {
     static String getLanguageToCurrentUser(long chatId){
         log.info("Try to get language option value for chat id: " + chatId);
         String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultLanguageAdm.toString(), chatId);
-        log.info("It is: " + languageOption);
         if(languageOption == null){
             return SettingsForBotGlobal.languageByDefault.value;
         }

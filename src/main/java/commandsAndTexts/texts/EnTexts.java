@@ -9,7 +9,7 @@ public enum EnTexts {
     newbieAnswerNotEqualsToGeneratedOne(" Wrong. Sorry entered data is not match with generated one. You will be banned! "),
     newbieCheckSuccess(" Right! Now you can send messages to group. Have a nice chatting. "),
     newbieAnswerContainsOnlyLetters("  Wrong. Sorry entered DATA contains only letters. You will be banned! "),
-    changeDefaultLanguage(" Language successfully changed "),
+    changeDefaultLanguage(" Language successfully changed to "),
     ;
 
     public String value;
