@@ -167,7 +167,7 @@ public class Bot extends TelegramLongPollingBot {
 
                 log.info("Silent user removed. Newbie list size: " + Main.newbieMapWithAnswer.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
                 String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
-                sendMessageToChatID(chatIdFromMainClass, userIdFromMainClass + textToSay);
+                sendMessageToChatID(chatIdFromMainClass, textToSay);
             }
         }
     }
