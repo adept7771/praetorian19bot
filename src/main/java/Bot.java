@@ -331,20 +331,23 @@ public class Bot extends TelegramLongPollingBot {
         sendMessageToChatID(chatId, messageText, null);
     }
 
+    /*
+    Send message and mention user by UID
+     */
     public void sendMessageToChatID(long chatId, String messageText, User userToMention) {
         SendMessage message = new SendMessage();
         if (messageText == null || messageText.equals("")) {
             log.info("Send text for message is empty. Nothing to say.");
             return;
         }
-        if(userToMention != null){ // turning on inline mentioning by user id
+        if(userToMention != null){ // turning on inline mentioning by user id if username is null
             messageText = "<a href=\"tg://user?id=" + userToMention.getId() + "\">" +
                     (userToMention.getFirstName() != null ? userToMention.getFirstName() : "") +
                     (userToMention.getLastName() != null ? " " + userToMention.getLastName() : "") +
-                    "</a> ";
+                    "</a> " + messageText;
             message.setChatId(chatId).setText(messageText).enableHtml(true);
         }
-        else { // send message
+        else { // send message in it not null
             message.setChatId(chatId).setText(messageText);
         }
         try {
@@ -427,12 +430,12 @@ public class Bot extends TelegramLongPollingBot {
                 String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
                 String userName = user.getUserName();
                 if(userName == null){
-                    userName = user.getFirstName() + " " + user.getLastName();
+                    sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2, user);
                 }
                 else {
                     userName+="@";
+                    sendMessageToChatID(chatId, userName + warningMessage + " " + randomDigit + " + " + randomDigit2);
                 }
-                sendMessageToChatID(chatId, userName + warningMessage + " " + randomDigit + " + " + randomDigit2);
             } else {
                 log.info("User is bot! Ignoring.");
             }
