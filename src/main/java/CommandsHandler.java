@@ -66,15 +66,15 @@ public class CommandsHandler {
     public static void recognizeAndHandleCommand(String incCommand, boolean isUpdatePersonalDirectMessage, long chatId, Update update) {
         String command = incCommand.toLowerCase();
         // handle default language command for bot
-        if (command.contains(CommandsEn.defaultLanguageAdm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) {
+        if (command.contains(CommandsEn.defaultlanguageadm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) {
             if(Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)){
                 // if user admin in chat
                 if (command.contains("en")) {
-                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultLanguageAdm.name(), "En", chatId);
+                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "En", chatId);
                     Main.bot.sendMessageToChatID(chatId, EnTexts.changeDefaultLanguage.value + " English ");
                 }
                 else if (command.contains("ru")) {
-                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultLanguageAdm.name(), "Ru", chatId);
+                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "Ru", chatId);
                     Main.bot.sendMessageToChatID(chatId, RuTexts.changeDefaultLanguage.value + " Русский ");
                 }
             }
