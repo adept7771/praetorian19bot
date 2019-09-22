@@ -433,7 +433,7 @@ public class Bot extends TelegramLongPollingBot {
                     sendMessageToChatID(chatId, warningMessage + " " + randomDigit + " + " + randomDigit2, user);
                 }
                 else {
-                    userName+="@";
+                    userName = "@" + userName;
                     sendMessageToChatID(chatId, userName + warningMessage + " " + randomDigit + " + " + randomDigit2);
                 }
             } else {
