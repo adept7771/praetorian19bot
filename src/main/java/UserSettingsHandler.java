@@ -2,14 +2,13 @@ import commandsAndTexts.commands.CommandsEn;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
 class UserSettingsHandler {
 
     private static final Logger log = Logger.getLogger(UserSettingsHandler.class);
     private static File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
-    public static long lastSettingsSavedTime;
+    public static long lastSettingsFileUpdateTime;
 
     static { // initial check that settings file is exist
 
@@ -23,15 +22,15 @@ class UserSettingsHandler {
 
             log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
 
-            Main.userSettingsInMemoryForBot = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
+            Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
             log.info("Parsed Map with settings from file stored to memory successful");
-            UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
+            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
 
         } else { // if file with setting is empty do nothing
 
             log.info("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
-            UserSettingsHandler.lastSettingsSavedTime = (new Date().getTime()) / 1000;
+            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
         }
 
 //        //Создаем поток-чтения-байт-из-файла
@@ -57,17 +56,19 @@ class UserSettingsHandler {
         HashMap<String, String> optionsToStore = new HashMap<String, String>();
         optionsToStore.put(setupOptionName, setupOptionValue);
         if (getSetupOptionValueFromMemory(setupOptionName, chatId) == null) {
-            Main.userSettingsInMemoryForBot.put(chatId, optionsToStore);
+            Main.userSettingsInMemory.put(chatId, optionsToStore);
         } else {
-            Main.userSettingsInMemoryForBot.get(chatId).put(setupOptionName, setupOptionValue);
+            Main.userSettingsInMemory.get(chatId).put(setupOptionName, setupOptionValue);
         }
         log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set.");
+
+        Main.lastMemorySettingsUpdateTime = (new Date().getTime()) / 1000;
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
         log.info("Recognizing setup option in memory " + setupOption + " for chat:" + chatId);
         try {
-            String optionValue = Main.userSettingsInMemoryForBot.get(chatId).get(setupOption);
+            String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption);
             log.info("Option value is: " + optionValue);
             return optionValue;
         } catch (Exception e) {
@@ -88,7 +89,7 @@ class UserSettingsHandler {
 
     public boolean compareChatSettingOptionValueInMem(long chatID, String optionNameToCompare, String optionValueToCompare) {
         try {
-            return Main.userSettingsInMemoryForBot.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
+            return Main.userSettingsInMemory.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
         } catch (Exception e) {
             log.info(e.toString());
             return false;
@@ -96,6 +97,10 @@ class UserSettingsHandler {
     }
 
     /* -------------------------------- SETTINGS FILE HANDLING ------------------------------------ */
+
+    public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime(){
+        return Main.lastMemorySettingsUpdateTime == UserSettingsHandler.lastSettingsFileUpdateTime;
+    }
 
     public static boolean compareAllSettingsInMemoryAndInFile() {
 
@@ -110,7 +115,7 @@ class UserSettingsHandler {
             HashMap<String, String> mapWithParametersFromFile = pair.getValue();
 
             try {
-                HashMap<String, String> mapWithParametersFromMemory = Main.userSettingsInMemoryForBot.get(chatIDFromFile);
+                HashMap<String, String> mapWithParametersFromMemory = Main.userSettingsInMemory.get(chatIDFromFile);
                 if (mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)) {
                     log.info("SettingsForBotGlobal for bots in memory is equals to settings in current file.");
                     return true;
@@ -123,24 +128,24 @@ class UserSettingsHandler {
                 return true;
             }
         }
-        log.info("Error while comparing setting in bot file and in memory. Return defaul true.");
+        log.info("Error while comparing setting in bot file and in memory. Return default true.");
         return true;
     }
 
-    public static void storeSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToStore, boolean rewriteOptionsIfExists) {
+    public static void storeSettingsMapToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithIncomingSettingsToStore, boolean rewriteOptionsIfExists) {
         log.info("Trying to store settings into settings file. RewriteOption if option setting exists is: " + rewriteOptionsIfExists);
-        HashMap<Long, HashMap<String, String>> mapOfSettings = parseSettingsFileInMap(new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value));
+        HashMap<Long, HashMap<String, String>> mapOfFinalSettings = parseSettingsFileInMap(new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value));
 
-        if (!mapOfSettings.equals(mapWithSettingsToStore)) {
-            Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = mapWithSettingsToStore.entrySet().iterator();
+        if (!mapOfFinalSettings.equals(mapWithIncomingSettingsToStore)) {
+            Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = mapWithIncomingSettingsToStore.entrySet().iterator();
 
             while (iterator.hasNext()) {
                 Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
                 Long chatIDmapWithSettingsToStore = pair.getKey();
                 HashMap<String, String> mapFromMapWithSettingsToStore = pair.getValue();
 
-                if (mapOfSettings.containsKey(chatIDmapWithSettingsToStore)) { // if we have map with options for chat id
-                    HashMap<String, String> mapWithOptionsFromSettingFile = mapOfSettings.get(chatIDmapWithSettingsToStore);
+                if (mapOfFinalSettings.containsKey(chatIDmapWithSettingsToStore)) { // if we have map with options for chat id
+                    HashMap<String, String> mapWithOptionsFromSettingFile = mapOfFinalSettings.get(chatIDmapWithSettingsToStore);
 
                     Iterator<Map.Entry<String, String>> iterator2 = mapWithOptionsFromSettingFile.entrySet().iterator();
                     while (iterator2.hasNext()) {
@@ -148,38 +153,79 @@ class UserSettingsHandler {
                         String optionName = pair2.getKey();
                         String optionValue = pair2.getValue();
 
-                        if (mapWithSettingsToStore.get(chatIDmapWithSettingsToStore).containsKey(optionName)) {
+                        if (mapWithIncomingSettingsToStore.get(chatIDmapWithSettingsToStore).containsKey(optionName)) {
                             if (rewriteOptionsIfExists) { // rewrite option if it exists
-                                mapWithSettingsToStore.get(chatIDmapWithSettingsToStore).put(optionName, optionValue);
+                                mapWithIncomingSettingsToStore.get(chatIDmapWithSettingsToStore).put(optionName, optionValue);
                                 log.info("Option name " + optionName + " is exists. Rewriting.");
                             } else {
                                 log.info("Option name " + optionName + " is exists. Nothing to do.");
                             }
                         } else { // if option didn't found write it
-                            mapWithSettingsToStore.get(chatIDmapWithSettingsToStore).put(optionName, optionValue);
+                            mapWithIncomingSettingsToStore.get(chatIDmapWithSettingsToStore).put(optionName, optionValue);
                             log.info("Option name " + optionName + " is not exists in settings file. Writing it.");
                         }
                     }
                 } else { // if we don't have map with options for chat id - write it
-                    mapOfSettings.put(chatIDmapWithSettingsToStore, mapFromMapWithSettingsToStore);
+                    mapOfFinalSettings.put(chatIDmapWithSettingsToStore, mapFromMapWithSettingsToStore);
                     log.info("Options for chatID " + chatIDmapWithSettingsToStore + " is absent. Writing it.");
                 }
             }
             // write new map with settings to settings file, delete old settings file
-            File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
-            if (settingsFile.delete()) {
-                System.out.println(settingsFile.getName() + " is deleted! Try to create new one with new settings.");
+            File oldSettingsFileToDelete = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
+            if (oldSettingsFileToDelete.delete()) {
 
+                log.info(oldSettingsFileToDelete.getName() + " is deleted! Try to create new one with new settings.");
+                writeMapWithSettingsToSettingsFile(mapOfFinalSettings);
             } else {
-                System.out.println("Delete operation for old settings file is failed.");
+                log.info("Delete operation for old settings file is failed. Something going wrong while trying to save setting to settings file.");
             }
         } else {
             log.info("Map with settings to store is equals to current settings in settings file. Nothing to store.");
         }
     }
 
-    static void writeMapWithSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToWrite){
+    public static void writeMapWithSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToStore){
+        try {
+            FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+            ArrayList<String> listOfDataToWrite = convertMapWithSettingsToList(mapWithSettingsToStore);
+            StringBuilder stringDataToWrite = new StringBuilder();
+            for(String currentString : listOfDataToWrite){
+                stringDataToWrite.append(currentString);
+            }
 
+            out.write(stringDataToWrite.toString().getBytes());
+            out.close();
+        } catch (IOException e) {
+            log.info(e);
+        }
+    }
+
+    static ArrayList<String> convertMapWithSettingsToList(HashMap<Long, HashMap<String, String>> mapWithSettings){
+        ArrayList<String> listOfDataToWrite = new ArrayList<>();
+
+        Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = mapWithSettings.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
+            StringBuilder stringToAdd = new StringBuilder();
+
+            Long chatID = pair.getKey();
+            stringToAdd.append(chatID).append(",");
+
+            HashMap<String, String> currentMapFromMapWithSettings = pair.getValue();
+
+            Iterator<Map.Entry<String, String>> iterator2 = currentMapFromMapWithSettings.entrySet().iterator();
+
+            while (iterator2.hasNext()){
+                Map.Entry<String, String> pair2 = iterator2.next();
+                String optionName = pair2.getKey();
+                String optionvalue = pair2.getValue();
+                stringToAdd.append(optionName).append("=").append(optionvalue).append(",");
+            }
+            listOfDataToWrite.add(stringToAdd.toString() + "\n");
+        }
+
+        return listOfDataToWrite;
     }
 
     static HashMap<Long, HashMap<String, String>> parseSettingsFileInMap(File file) {

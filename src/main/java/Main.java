@@ -18,7 +18,8 @@ public class Main {
     public static Bot bot;
 
     static UserSettingsHandler userSettingsHandler = new UserSettingsHandler();
-    public static HashMap<Long, HashMap<String, String>> userSettingsInMemoryForBot = new HashMap<Long, HashMap<String, String>>();
+    public static HashMap<Long, HashMap<String, String>> userSettingsInMemory = new HashMap<Long, HashMap<String, String>>();
+    public static long lastMemorySettingsUpdateTime;
 
     public static void main(String[] args) {
 

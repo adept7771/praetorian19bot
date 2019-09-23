@@ -40,6 +40,11 @@ public class Bot extends TelegramLongPollingBot {
         boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalpublicMessageToBot = false;
         Message replyMessage = null;
 
+        // check settings in memory and in settings file
+        if(!UserSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
+
+        }
+
         try {
             replyMessage = update.getMessage().getReplyToMessage();
             if (replyMessage != null) {
