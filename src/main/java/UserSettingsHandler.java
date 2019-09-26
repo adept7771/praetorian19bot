@@ -16,6 +16,7 @@ class UserSettingsHandler {
         log.info("Is settings file exists? " + settingsFile.exists());
 
         ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
+        long updateTime = (new Date().getTime()) / 1000;
 
         if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ") && !(listOfParametersFromSettingsFile.get(0).length() > 5)) {
             // if setting file not empty we must parse in into map
@@ -24,13 +25,16 @@ class UserSettingsHandler {
 
             Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
 
+            Main.lastMemorySettingsUpdateTime = updateTime;
+            UserSettingsHandler.lastSettingsFileUpdateTime = updateTime;
+
             log.info("Parsed Map with settings from file stored to memory successful");
-            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
-
+            log.info("Memory settings update time: " + Main.lastMemorySettingsUpdateTime);
         } else { // if file with setting is empty do nothing
-
             log.info("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
-            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
+            Main.lastMemorySettingsUpdateTime = updateTime;
+            UserSettingsHandler.lastSettingsFileUpdateTime = updateTime;
+            log.info("Memory update time: " + Main.lastMemorySettingsUpdateTime);
         }
 
 //        //Создаем поток-чтения-байт-из-файла
@@ -60,9 +64,10 @@ class UserSettingsHandler {
         } else {
             Main.userSettingsInMemory.get(chatId).put(setupOptionName, setupOptionValue);
         }
-        log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set.");
+        log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set into memory");
 
         Main.lastMemorySettingsUpdateTime = (new Date().getTime()) / 1000;
+        log.info("Memory update time: " + Main.lastMemorySettingsUpdateTime);
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
@@ -72,7 +77,7 @@ class UserSettingsHandler {
             log.info("Option value is: " + optionValue);
             return optionValue;
         } catch (Exception e) {
-            log.info("Error while trying to get option from memory " + setupOption + " for chat: " + chatId + " " + e.toString());
+            log.info("Error while trying to get option from memory (it could be not initialised) " + setupOption + " for chat: " + chatId + " " + e.toString());
             return null;
         }
     }
@@ -99,6 +104,7 @@ class UserSettingsHandler {
     /* -------------------------------- SETTINGS FILE HANDLING ------------------------------------ */
 
     public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime(){
+        log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: " + UserSettingsHandler.lastSettingsFileUpdateTime);
         return Main.lastMemorySettingsUpdateTime == UserSettingsHandler.lastSettingsFileUpdateTime;
     }
 
@@ -108,28 +114,34 @@ class UserSettingsHandler {
 
         HashMap<Long, HashMap<String, String>> copyOfCurrentSettingsFileInMapView = parseSettingsFileInMap(settingsFile);
 
-        Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
-            Long chatIDFromFile = pair.getKey();
-            HashMap<String, String> mapWithParametersFromFile = pair.getValue();
-
-            try {
-                HashMap<String, String> mapWithParametersFromMemory = Main.userSettingsInMemory.get(chatIDFromFile);
-                if (mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)) {
-                    log.info("SettingsForBotGlobal for bots in memory is equals to settings in current file.");
-                    return true;
-                } else {
-                    log.info("SettingsForBotGlobal for bots in memory is NOT equals to settings in current file.");
-                    return false;
-                }
-            } catch (Exception e) {
-                log.info("Error while comparing setting in bot file and in memory. Return default true.");
-                return true;
-            }
+        if(copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() == 0){
+            log.info("Settings in memory and in file is empty both.");
+            return true;
         }
-        log.info("Error while comparing setting in bot file and in memory. Return default true.");
-        return true;
+        else {
+            Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
+                Long chatIDFromFile = pair.getKey();
+                HashMap<String, String> mapWithParametersFromFile = pair.getValue();
+
+                try {
+                    HashMap<String, String> mapWithParametersFromMemory = Main.userSettingsInMemory.get(chatIDFromFile);
+                    if (mapWithParametersFromMemory.equals(copyOfCurrentSettingsFileInMapView)) {
+                        log.info("SettingsForBotGlobal for bots in memory is equals to settings in current file.");
+                        return true;
+                    } else {
+                        log.info("SettingsForBotGlobal for bots in memory is NOT equals to settings in current file.");
+                        return false;
+                    }
+                } catch (Exception e) {
+                    log.info("Error while comparing setting in bot file and in memory. Return default true.");
+                    return true;
+                }
+            }
+            log.info("Error while comparing setting in bot file and in memory. Return default true.");
+            return true;
+        }
     }
 
     public static void storeSettingsMapToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithIncomingSettingsToStore, boolean rewriteOptionsIfExists) {
@@ -195,7 +207,12 @@ class UserSettingsHandler {
 
             out.write(stringDataToWrite.toString().getBytes());
             out.close();
+
+            log.info("Map with settings successfully wrote to settings file.");
+            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
+
         } catch (IOException e) {
+            log.info("Map with settings is NOT successfully wrote to settings file.");
             log.info(e);
         }
     }
@@ -265,32 +282,37 @@ class UserSettingsHandler {
 
     static HashMap<Long, HashMap<String, String>> parseSettingsArrayListInSettingsMap(ArrayList<String> listOfParametersFromSettingsFile) {
 
-        HashMap<Long, HashMap<String, String>> mapWithSettings = new HashMap<>();
-
-        for (String lineWithAllParams : listOfParametersFromSettingsFile) {
-
-            log.info("Current string with settings is: " + lineWithAllParams);
-
-            int indexOfFirstComma = lineWithAllParams.indexOf(",");
-            long idOfChat = Long.valueOf(lineWithAllParams.substring(0, indexOfFirstComma));
-
-            mapWithSettings.put(idOfChat, new HashMap<>());
-
-            for (int i = indexOfFirstComma; i < lineWithAllParams.length(); i++) {
-                if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
-                    int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
-                    if (nextIndexOfComma == -1) {
-                        nextIndexOfComma = lineWithAllParams.length();
-                    }
-                    String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
-                    mapWithSettings.get(idOfChat).put(
-                            dataToWrite.substring(0, dataToWrite.indexOf("=")),
-                            dataToWrite.substring(dataToWrite.indexOf("=") + 1)
-                    );
-                }
-            }
-            log.info("Parsed all params for ChatID into map: " + idOfChat);
+        if(listOfParametersFromSettingsFile.size() == 1 || listOfParametersFromSettingsFile.get(0).equals(" ")){
+            return new HashMap<Long, HashMap<String, String>>();
         }
-        return mapWithSettings;
+        else {
+            HashMap<Long, HashMap<String, String>> mapWithSettings = new HashMap<>();
+
+            for (String lineWithAllParams : listOfParametersFromSettingsFile) {
+
+                log.info("Current string with settings is: " + lineWithAllParams);
+
+                int indexOfFirstComma = lineWithAllParams.indexOf(",");
+                long idOfChat = Long.valueOf(lineWithAllParams.substring(0, indexOfFirstComma));
+
+                mapWithSettings.put(idOfChat, new HashMap<>());
+
+                for (int i = indexOfFirstComma; i < lineWithAllParams.length(); i++) {
+                    if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
+                        int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
+                        if (nextIndexOfComma == -1) {
+                            nextIndexOfComma = lineWithAllParams.length();
+                        }
+                        String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
+                        mapWithSettings.get(idOfChat).put(
+                                dataToWrite.substring(0, dataToWrite.indexOf("=")),
+                                dataToWrite.substring(dataToWrite.indexOf("=") + 1)
+                        );
+                    }
+                }
+                log.info("Parsed all params for ChatID into map: " + idOfChat);
+            }
+            return mapWithSettings;
+        }
     }
 }

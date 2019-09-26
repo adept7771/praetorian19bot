@@ -42,7 +42,12 @@ public class Bot extends TelegramLongPollingBot {
 
         // check settings in memory and in settings file
         if(!UserSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
-
+            // initial comparing
+            if(!UserSettingsHandler.compareAllSettingsInMemoryAndInFile()){
+                // all settings atfirst is stored in mem so mem settings in all cases will be newer then
+                // settings in file. So we must copy all settings in mem into settings file
+                UserSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
+            }
         }
 
         try {
