@@ -18,7 +18,7 @@ class UserSettingsHandler {
         ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
         long updateTime = (new Date().getTime()) / 1000;
 
-        if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ") && !(listOfParametersFromSettingsFile.get(0).length() > 5)) {
+        if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ")) {
             // if setting file not empty we must parse in into map
 
             log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
@@ -118,7 +118,13 @@ class UserSettingsHandler {
             log.info("Settings in memory and in file is empty both.");
             return true;
         }
-        else {
+        if(copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() > 0) {
+            log.info("Settings in memory not empty, but settings in file is empty.");
+            return false;
+        }
+        if(copyOfCurrentSettingsFileInMapView.size() > 0 && Main.userSettingsInMemory.size() > 0) {
+            log.info("Settings in memory not empty, settings in file is not empty. Start comparing");
+
             Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
@@ -142,6 +148,8 @@ class UserSettingsHandler {
             log.info("Error while comparing setting in bot file and in memory. Return default true.");
             return true;
         }
+        log.info("Something going wrong while comparing memory settings and file setting. Return true by default.");
+        return true;
     }
 
     public static void storeSettingsMapToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithIncomingSettingsToStore, boolean rewriteOptionsIfExists) {
@@ -183,7 +191,8 @@ class UserSettingsHandler {
                 }
             }
             // write new map with settings to settings file, delete old settings file
-            File oldSettingsFileToDelete = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName);
+            File oldSettingsFileToDelete = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+
             if (oldSettingsFileToDelete.delete()) {
 
                 log.info(oldSettingsFileToDelete.getName() + " is deleted! Try to create new one with new settings.");
@@ -282,7 +291,7 @@ class UserSettingsHandler {
 
     static HashMap<Long, HashMap<String, String>> parseSettingsArrayListInSettingsMap(ArrayList<String> listOfParametersFromSettingsFile) {
 
-        if(listOfParametersFromSettingsFile.size() == 1 || listOfParametersFromSettingsFile.get(0).equals(" ")){
+        if(listOfParametersFromSettingsFile.size() == 0 || listOfParametersFromSettingsFile.get(0).equals(" ")){
             return new HashMap<Long, HashMap<String, String>>();
         }
         else {
@@ -297,7 +306,7 @@ class UserSettingsHandler {
 
                 mapWithSettings.put(idOfChat, new HashMap<>());
 
-                for (int i = indexOfFirstComma; i < lineWithAllParams.length(); i++) {
+                for (int i = indexOfFirstComma; i < lineWithAllParams.length()-1; i++) {
                     if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
                         int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
                         if (nextIndexOfComma == -1) {
