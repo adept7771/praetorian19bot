@@ -2,7 +2,7 @@ package commandsAndTexts.texts;
 
 public enum EnTexts {
 
-    defaultGreetings(" Hi! ATTENTION! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. How much will be: "),
+    defaultGreetings(" Hi! Antispam filter! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. How much will be: "),
     spammerBanned(" Spamer banned and spam deleted! Praetorians at your service. Meow! "),
     adminCheckWrong(" Sorry you are not admin for this chat. "),
     removedSilentUser(" Silent user was removed after delay. Meow! "),

@@ -9,7 +9,7 @@ public class Main {
 
     public static String absolutePath = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
-    static HashMap<Integer, Integer> newbieMapWithAnswer = new HashMap<>();
+    static HashMap<Integer, Integer> newbieMapWithGeneratedAnswers = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
 

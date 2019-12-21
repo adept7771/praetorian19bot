@@ -46,39 +46,38 @@ public class NumberWordConverter {
 
     public static String convert(final int n, String language, boolean letterMasking) {
 
-        if(language.toLowerCase().contains("en")){
+        if (language.toLowerCase().contains("en")) {
             if (n == 0) {
-                return "zero";
+                return maskLetters("zero", letterMasking);
             }
 
             if (n < 0) {
-                return "minus " + convert(-n, language, letterMasking);
+                return maskLetters("minus " + convert(-n, language, letterMasking), letterMasking);
             }
 
             if (n < 20) {
-                return unitsEn[n];
+                return maskLetters(unitsEn[n], letterMasking);
             }
 
             if (n < 100) {
-                return tensEn[n / 10] + ((n % 10 != 0) ? " " : "") + unitsEn[n % 10];
+                return maskLetters(tensEn[n / 10] + ((n % 10 != 0) ? " " : "") + unitsEn[n % 10], letterMasking);
             }
 
             if (n < 1000) {
-                return unitsEn[n / 100] + " hundred" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, letterMasking);
+                return maskLetters(unitsEn[n / 100] + " hundred" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
             }
 
             if (n < 1000000) {
-                return convert(n / 1000, language, letterMasking) + " thousand" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language, letterMasking);
+                return maskLetters(convert(n / 1000, language, letterMasking) + " thousand" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language, false), letterMasking);
             }
 
             if (n < 1000000000) {
-                return convert(n / 1000000, language, letterMasking) + " million" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language, letterMasking);
+                return maskLetters(convert(n / 1000000, language, letterMasking) + " million" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language, false), letterMasking);
             }
 
-            return convert(n / 1000000000, language, letterMasking) + " billion"  + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, letterMasking);
-        }
+            return maskLetters(convert(n / 1000000000, language, letterMasking) + " billion" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, false), letterMasking);
 
-        else if(language.toLowerCase().contains("ru")){
+        } else if (language.toLowerCase().contains("ru")) {
             if (n == 0) {
                 return maskLetters("ноль", letterMasking);
             }
@@ -96,16 +95,16 @@ public class NumberWordConverter {
             }
 
             if (n < 1000) {
-                if(n >= 100 && n < 200){
+                if (n >= 100 && n < 200) {
                     return maskLetters(("сто" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false)), letterMasking);
                 }
-                if(n >= 200 && n < 300){
+                if (n >= 200 && n < 300) {
                     return maskLetters("двести" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
                 }
-                if(n >= 300 && n < 400){
+                if (n >= 300 && n < 400) {
                     return maskLetters("триста" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
                 }
-                if(n >= 400 && n < 500){
+                if (n >= 400 && n < 500) {
                     return maskLetters("четыреста" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
                 }
                 return maskLetters(unitsRu[n / 100] + "сот" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
@@ -119,21 +118,20 @@ public class NumberWordConverter {
                 return maskLetters(convert(n / 1000000, language, letterMasking) + " миллионов" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language, letterMasking), letterMasking);
             }
 
-            return maskLetters(convert(n / 1000000000, language, letterMasking) + " биллионов"  + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, letterMasking), letterMasking);
+            return maskLetters(convert(n / 1000000000, language, letterMasking) + " биллионов" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, letterMasking), letterMasking);
 
         }
         log.info("Error while trying to convert entered digital to letters.");
         return "";
     }
 
-    public static String maskLetters(String cleanString, boolean maskLetters){
-        if(!maskLetters){
+    public static String maskLetters(String cleanString, boolean maskLetters) {
+        if (!maskLetters) {
             return cleanString;
-        }
-        else {
+        } else {
             StringBuilder resultMaskedString = new StringBuilder();
-            for(int i = 0; i < cleanString.length(); i++){
-                String currentChar = cleanString.substring(i, i+1);
+            for (int i = 0; i < cleanString.length(); i++) {
+                String currentChar = cleanString.substring(i, i + 1);
 
                 // Cyrillic to Latin ----------------------------
 
@@ -157,7 +155,7 @@ public class NumberWordConverter {
                         resultMaskedString.append("u");
                         break;
                     case ("к"):
-                        resultMaskedString.append("K");
+                        resultMaskedString.append("k");
                         break;
                     case ("м"):
                         resultMaskedString.append("M");
@@ -192,6 +190,46 @@ public class NumberWordConverter {
                     case ("я"):
                         resultMaskedString.append("R");
                         break;
+
+
+                    // Latin to cyrillic ----------------------------
+
+                    case ("a"):
+                        resultMaskedString.append("а");
+                        break;
+                    case ("b"):
+                        resultMaskedString.append("ь");
+                        break;
+                    case ("c"):
+                        resultMaskedString.append("с");
+                        break;
+                    case ("e"):
+                        resultMaskedString.append("е");
+                        break;
+                    case ("h"):
+                        resultMaskedString.append("Н");
+                        break;
+                    case ("k"):
+                        resultMaskedString.append("к");
+                        break;
+                    case ("m"):
+                        resultMaskedString.append("м");
+                        break;
+                    case ("o"):
+                        resultMaskedString.append("0");
+                        break;
+                    case ("p"):
+                        resultMaskedString.append("р");
+                        break;
+                    case ("y"):
+                        resultMaskedString.append("у");
+                        break;
+                    case ("x"):
+                        resultMaskedString.append("х");
+                        break;
+
+                    // Default cases
+
                     case (" "):
                         resultMaskedString.append(" ");
                         break;
@@ -204,16 +242,16 @@ public class NumberWordConverter {
         }
     }
 
-    public static void main(final String[] args) {
-        final Random generator = new Random();
-
-        int n;
-
-        for (int i = 0; i < 20; i++) {
-            n = generator.nextInt(1000);
-
-            System.out.printf("%10d = '%s'%n", n, convert(n, "ru", true));
-        }
+//    public static void main(final String[] args) {
+//        final Random generator = new Random();
+//
+//        int n;
+//
+//        for (int i = 0; i < 20; i++) {
+//            n = generator.nextInt(1000);
+//
+//            System.out.printf("%10d = '%s'%n", n, convert(n, "en", true));
+//        }
 
 //        int b = 278;
 //        System.out.printf("%10d = '%s'%n", b, convert(b, "ru", true));
@@ -235,5 +273,5 @@ public class NumberWordConverter {
 //
 //        n = Integer.MAX_VALUE;
 //        System.out.printf("%10d = '%s'%n", n, convert(n));
-    }
+//    }
 }
