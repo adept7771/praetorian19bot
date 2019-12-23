@@ -17,7 +17,7 @@ public class Main {
 
     public static Bot bot;
 
-    static UserSettingsHandler userSettingsHandler = new UserSettingsHandler();
+    static ChatSettingsHandler chatSettingsHandler = new ChatSettingsHandler();
     public static HashMap<Long, HashMap<String, String>> userSettingsInMemory = new HashMap<Long, HashMap<String, String>>();
     public static long lastMemorySettingsUpdateTime;
 

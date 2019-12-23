@@ -47,9 +47,9 @@ public class NumberWordConverter {
     public static String convert(final int n, String language, boolean letterMasking) {
 
         if (language.toLowerCase().contains("en")) {
-            if (n == 0) {
-                return maskLetters("zero", letterMasking);
-            }
+//            if (n == 0) {
+//                return maskLetters("zero", letterMasking);
+//            }
 
             if (n < 0) {
                 return maskLetters("minus " + convert(-n, language, letterMasking), letterMasking);
@@ -78,9 +78,9 @@ public class NumberWordConverter {
             return maskLetters(convert(n / 1000000000, language, letterMasking) + " billion" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, false), letterMasking);
 
         } else if (language.toLowerCase().contains("ru")) {
-            if (n == 0) {
-                return maskLetters("ноль", letterMasking);
-            }
+//            if (n == 0) {
+//                return maskLetters("ноль", letterMasking);
+//            }
 
             if (n < 0) {
                 return maskLetters("minus " + convert(-n, language, letterMasking), letterMasking);
@@ -191,7 +191,6 @@ public class NumberWordConverter {
                         resultMaskedString.append("R");
                         break;
 
-
                     // Latin to cyrillic ----------------------------
 
                     case ("a"):
@@ -242,7 +241,7 @@ public class NumberWordConverter {
         }
     }
 
-//    public static void main(final String[] args) {
+ //   public static void main(final String[] args) {
 //        final Random generator = new Random();
 //
 //        int n;
@@ -253,8 +252,8 @@ public class NumberWordConverter {
 //            System.out.printf("%10d = '%s'%n", n, convert(n, "en", true));
 //        }
 
-//        int b = 278;
-//        System.out.printf("%10d = '%s'%n", b, convert(b, "ru", true));
+//        int b = 0;
+//        System.out.printf("%10d = '%s'%n", b, convert(b, "en", true));
 
 //        n = 1000;
 //        System.out.printf("%10d = '%s'%n", n, convert(n));

@@ -4,36 +4,41 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.util.*;
 
-class UserSettingsHandler {
+class ChatSettingsHandler {
 
-    private static final Logger log = Logger.getLogger(UserSettingsHandler.class);
+    private static final Logger log = Logger.getLogger(ChatSettingsHandler.class);
     private static File settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
     public static long lastSettingsFileUpdateTime;
 
-    static { // initial check that settings file is exist
+    /* ------------------------------------ Initialising ------------------------------------ */
+    // initialising settings from settings file to memory of bot
 
+    public static void initialiseSettingsFromFileToMemory() {
+
+        log.info("Initialising settings from settings file to memory of bot ");
         log.info("Absolute path to working dir is: " + Main.absolutePath);
         log.info("Is settings file exists? " + settingsFile.exists());
 
-        ArrayList<String> listOfParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
+        ArrayList<String> listOfAllChatParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
         long updateTime = (new Date().getTime()) / 1000;
 
-        if (!listOfParametersFromSettingsFile.isEmpty() && !listOfParametersFromSettingsFile.get(0).equals(" ")) {
+        // try to store settings file option by option into memory
+        if (!listOfAllChatParametersFromSettingsFile.isEmpty() && !listOfAllChatParametersFromSettingsFile.get(0).equals(" ")) {
             // if setting file not empty we must parse in into map
 
             log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
 
-            Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap(listOfParametersFromSettingsFile);
+            Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap(listOfAllChatParametersFromSettingsFile);
 
             Main.lastMemorySettingsUpdateTime = updateTime;
-            UserSettingsHandler.lastSettingsFileUpdateTime = updateTime;
+            ChatSettingsHandler.lastSettingsFileUpdateTime = updateTime;
 
             log.info("Parsed Map with settings from file stored to memory successful");
             log.info("Memory settings update time: " + Main.lastMemorySettingsUpdateTime);
         } else { // if file with setting is empty do nothing
             log.info("List of parameters from settings file is empty! Nothing to initialising and save in memory.");
             Main.lastMemorySettingsUpdateTime = updateTime;
-            UserSettingsHandler.lastSettingsFileUpdateTime = updateTime;
+            ChatSettingsHandler.lastSettingsFileUpdateTime = updateTime;
             log.info("Memory update time: " + Main.lastMemorySettingsUpdateTime);
         }
 
@@ -71,9 +76,9 @@ class UserSettingsHandler {
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
-        log.info("Recognizing setup option in memory " + setupOption + " for chat:" + chatId);
+        log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId);
         try {
-            String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption);
+            String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption.toLowerCase());
             log.info("Option value is: " + optionValue);
             return optionValue;
         } catch (Exception e) {
@@ -82,7 +87,7 @@ class UserSettingsHandler {
         }
     }
 
-    static String getLanguageToCurrentUser(long chatId) {
+    static String getLanguageOptionToChat(long chatId) {
         log.info("Try to get language option value for chat id: " + chatId);
         String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultlanguageadm.toString(), chatId);
         if (languageOption == null) {
@@ -104,8 +109,8 @@ class UserSettingsHandler {
     /* -------------------------------- SETTINGS FILE HANDLING ------------------------------------ */
 
     public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime(){
-        log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: " + UserSettingsHandler.lastSettingsFileUpdateTime);
-        return Main.lastMemorySettingsUpdateTime == UserSettingsHandler.lastSettingsFileUpdateTime;
+        log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: " + ChatSettingsHandler.lastSettingsFileUpdateTime);
+        return Main.lastMemorySettingsUpdateTime == ChatSettingsHandler.lastSettingsFileUpdateTime;
     }
 
     public static boolean compareAllSettingsInMemoryAndInFile() {
@@ -218,7 +223,7 @@ class UserSettingsHandler {
             out.close();
 
             log.info("Map with settings successfully wrote to settings file.");
-            UserSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
+            ChatSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
 
         } catch (IOException e) {
             log.info("Map with settings is NOT successfully wrote to settings file.");

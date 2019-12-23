@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +26,7 @@ public class Bot extends TelegramLongPollingBot {
     public static Update currentUpdate;
 
     static {
+        ChatSettingsHandler.initialiseSettingsFromFileToMemory();
         log.info("Bot successfully initialised :3 ");
     }
 
@@ -40,17 +42,17 @@ public class Bot extends TelegramLongPollingBot {
         boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalpublicMessageToBot = false;
         Message replyMessage = null;
 
-        // check settings in memory and in settings file
-        if(!UserSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
+        // periodic task which check settings in memory and in settings file by update time
+        if(!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
             // initial comparing
-            if(!UserSettingsHandler.compareAllSettingsInMemoryAndInFile()){
-                // all settings atfirst is stored in mem so mem settings in all cases will be newer then
-                // settings in file. So we must copy all settings in mem into settings file
-                UserSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
+            if(!ChatSettingsHandler.compareAllSettingsInMemoryAndInFile()){
+                // all settings at first is stored in mem so mem settings in all cases will be newer then
+                // settings in file. So we must copy all settings from memory into settings file
+                ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
             }
         }
 
-        try {
+        try { // if it reply message save it into variable
             replyMessage = update.getMessage().getReplyToMessage();
             if (replyMessage != null) {
                 isUpdateContainsReply = true;
@@ -59,12 +61,13 @@ public class Bot extends TelegramLongPollingBot {
         } catch (Exception e) {
             replyMessage = null;
         }
-        try {
+        try { // ignoring message if it from bot
             update.getMessage().getFrom().getBot();
             if (isUpdateFromBot) {
                 log.info("Update from bot. Ignoring.");
             }
         } catch (Exception e) {
+            log.info("Exception while recognizing update from bot. Ignoring. " + e);
             isUpdateFromBot = false;
         }
 
@@ -368,7 +371,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendMessageToChatID(long chatId, String messageText, boolean messageTextIsTemplateText) {
-        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
             sendMessageToChatID(chatId, RuTexts.getValueForKey(messageText));
         } else if (language.contains("en") && messageTextIsTemplateText) {
@@ -395,7 +398,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
-        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
             sendReplyMessageToChatID(chatId, RuTexts.getValueForKey(messageText), replyToMessageId);
         } else if (language.contains("en") && messageTextIsTemplateText) {
@@ -425,8 +428,8 @@ public class Bot extends TelegramLongPollingBot {
                 log.info("User is not bot. Processing.");
 
                 int userId = user.getId();
-                int randomDigit = (int) (Math.random() * 1000);
-                int randomDigit2 = (int) (Math.random() * 1000);
+                int randomDigit = ThreadLocalRandom.current().nextInt(1, 1001);
+                int randomDigit2 = ThreadLocalRandom.current().nextInt(1, 1001);
                 int answerDigit = randomDigit + randomDigit2;
 
                 Main.newbieMapWithGeneratedAnswers.put(userId, answerDigit);
@@ -439,20 +442,20 @@ public class Bot extends TelegramLongPollingBot {
                 // Send warning greetings message with generated digits
                 String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
                 String userName = user.getUserName();
-                String chatLanguageOptionForChat = UserSettingsHandler.getLanguageToCurrentUser(chatId);
+                String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionToChat(chatId);
                 if(userName == null){
                     sendMessageToChatID(chatId, warningMessage + " " +
-                            NumberWordConverter.convert(randomDigit, UserSettingsHandler.getLanguageToCurrentUser(chatId), true)
+                            NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
                             + " + "
-                            + NumberWordConverter.convert(randomDigit2, UserSettingsHandler.getLanguageToCurrentUser(chatId), true)
+                            + NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat, true)
                             , user);
                 }
                 else {
                     userName = "@" + userName;
                     sendMessageToChatID(chatId, userName + warningMessage + " " +
-                            NumberWordConverter.convert(randomDigit, UserSettingsHandler.getLanguageToCurrentUser(chatId), true)
+                            NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
                             + " + " +
-                            NumberWordConverter.convert(randomDigit2, UserSettingsHandler.getLanguageToCurrentUser(chatId), true));
+                            NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat, true));
                 }
             } else {
                 log.info("User is bot! Ignoring.");
@@ -461,7 +464,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
-        String language = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
         if (language.contains("ru")) {
             return RuTexts.getValueForKey(templateTextName);
         } else if (language.contains("en")) {

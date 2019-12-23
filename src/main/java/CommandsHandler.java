@@ -11,7 +11,7 @@ public class CommandsHandler {
 
     public static void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage, Update update) {
 
-        String currentChatLanguage = UserSettingsHandler.getLanguageToCurrentUser(chatId).toLowerCase();
+        String currentChatLanguage = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
 
         if (messageText.contains("/help")) { // Print HELP for all messages in ONE message
             log.info("Message text contains /help - show commandsAndTexts list");
@@ -70,11 +70,11 @@ public class CommandsHandler {
             if(Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)){
                 // if user admin in chat
                 if (command.contains("en")) {
-                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "En", chatId);
+                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "En", chatId);
                     Main.bot.sendMessageToChatID(chatId, EnTexts.changeDefaultLanguage.value + " English ");
                 }
                 else if (command.contains("ru")) {
-                    UserSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "Ru", chatId);
+                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "Ru", chatId);
                     Main.bot.sendMessageToChatID(chatId, RuTexts.changeDefaultLanguage.value + " Русский ");
                 }
             }
