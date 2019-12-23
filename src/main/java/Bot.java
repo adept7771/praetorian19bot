@@ -32,15 +32,33 @@ public class Bot extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
 
-        log.info("Full update: " + update.toString());
-        currentUpdate = update;
+        final long currentDateTime = (new Date().getTime()) / 1000;
 
-        String regex = "(.)*(\\d)(.)*"; // for check digits in answer
-        long currentDateTime = (new Date().getTime()) / 1000;
-        Pattern pattern = Pattern.compile(regex);
-        long chatId = update.getMessage().getChatId();
-        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false, messageInChatContainsBotName = false, isUpdateContainsPersonalpublicMessageToBot = false;
+        // cut old updates to prevent commands overloading
+        if(update.hasMessage()){
+            if(currentDateTime > update.getMessage().getDate()){
+                log.info("Update is older then now time. Ignoring update: " + update.getUpdateId());
+                return;
+            }
+            else {
+                log.info("Full update: " + update.toString());
+                currentUpdate = update;
+                // TODO: kill update variable in memory
+            }
+        }
+
+        final String regex = "(.)*(\\d)(.)*"; // for check digits in answer
+        final Pattern pattern = Pattern.compile(regex);
+
+        final long chatId = currentUpdate.getMessage().getChatId();
+        boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false,
+            messageInChatContainsBotName = false, isUpdateContainsPersonalPublicMessageToBot = false;
+        boolean isUpdateHasMessage = false;
         Message replyMessage = null;
+
+        if(currentUpdate.hasMessage()){
+            isUpdateHasMessage = true;
+        }
 
         // periodic task which check settings in memory and in settings file by update time
         if(!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
@@ -53,7 +71,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         try { // if it reply message save it into variable
-            replyMessage = update.getMessage().getReplyToMessage();
+            replyMessage = currentUpdate.getMessage().getReplyToMessage();
             if (replyMessage != null) {
                 isUpdateContainsReply = true;
                 log.info("Update contains reply message: " + replyMessage);
@@ -62,7 +80,7 @@ public class Bot extends TelegramLongPollingBot {
             replyMessage = null;
         }
         try { // ignoring message if it from bot
-            update.getMessage().getFrom().getBot();
+            currentUpdate.getMessage().getFrom().getBot();
             if (isUpdateFromBot) {
                 log.info("Update from bot. Ignoring.");
             }
@@ -72,10 +90,12 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         // LEFT MEMBERS update handling we must remove it from newbies list if user from there
-        if (update.getMessage().getLeftChatMember() != null) {
-            User leftChatMember = update.getMessage().getLeftChatMember();
-            if (!leftChatMember.getBot()) {
-                removeLeftMemberFromNewbieList(leftChatMember.getId());
+        if(isUpdateHasMessage){
+            if (currentUpdate.getMessage().getLeftChatMember() != null) {
+                User leftChatMember = currentUpdate.getMessage().getLeftChatMember();
+                if (!leftChatMember.getBot()) {
+                    removeLeftMemberFromNewbieList(leftChatMember.getId());
+                }
             }
         }
 
@@ -90,16 +110,16 @@ public class Bot extends TelegramLongPollingBot {
         else {
 
             // MESSAGES HANDLING ------------------------------------------------------------>
-            if (update.hasMessage()) {
+            if (isUpdateHasMessage) {
 
-                String messageText = update.getMessage().getText();
-                int messageId = update.getMessage().getMessageId();
+                String messageText = currentUpdate.getMessage().getText();
+                int messageId = currentUpdate.getMessage().getMessageId();
 
                 // is it reply message contains bot name?
                 if (replyMessage != null) {
                     try {
-                        log.info("Reply message contains name: " + update.getMessage().getReplyToMessage().getFrom().getUserName());
-                        replyMessageInChatContainsBotName = update.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
+                        log.info("Reply message contains name: " + currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName());
+                        replyMessageInChatContainsBotName = currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
                     } catch (Exception e) {
                         replyMessageInChatContainsBotName = false;
                     } finally {
@@ -120,33 +140,33 @@ public class Bot extends TelegramLongPollingBot {
 
                 // if it personal message in personal direct chat
                 try {
-                    if (update.getMessage().getChat().isUserChat()) {
-                        isUpdateContainsPersonalpublicMessageToBot = true;
+                    if (currentUpdate.getMessage().getChat().isUserChat()) {
+                        isUpdateContainsPersonalPublicMessageToBot = true;
                         log.info("Update is public message to bot in chat.");
                     }
                 } catch (Exception e) {
-                    isUpdateContainsPersonalpublicMessageToBot = false;
+                    isUpdateContainsPersonalPublicMessageToBot = false;
                 }
 
                 // ------------- CHECK MENTIONS IN CHAT MESSAGE OR IN REPLY
 
-                if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalpublicMessageToBot) {
+                if (messageInChatContainsBotName || replyMessageInChatContainsBotName || isUpdateContainsPersonalPublicMessageToBot) {
                     // user also can answer in personal public messages to bot
 
                     // COMMANDS HANDLING -------------------------------->
                     if (messageText != null && messageText.contains("/")) {
-                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalpublicMessageToBot, update);
+                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
                     }
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                    if (Main.newbieMapWithGeneratedAnswers.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
-                        validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
+                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
+                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId, messageId, currentDateTime);
                     }
                 } else { // no mentions of bot or personal public messages to him
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                    if (Main.newbieMapWithGeneratedAnswers.containsKey(update.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalpublicMessageToBot) {
-                        validateNewbieAnswer(update, messageText, pattern, chatId, messageId, currentDateTime);
+                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
+                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId, messageId, currentDateTime);
                     }
                 }
 
