@@ -13,6 +13,10 @@ public class Main {
     static HashMap<Integer, Long> newbieMapWithJoinTime = new HashMap<>();
     static HashMap<Integer, Long> newbieMapWithChatId = new HashMap<>();
 
+    public static HashMap<Long, HashMap<Integer, Long>> usersToSecondaryApprove = new HashMap<Long, HashMap<Integer, Long>>();
+    // ^ this hash map needed to secondary check that user is not a bot. User must wright something in defined time
+    // interval after first approve. If it will not be done bot will kick this user from chat.
+
     public static final Logger log = Logger.getLogger(Main.class);
 
     public static Bot bot;

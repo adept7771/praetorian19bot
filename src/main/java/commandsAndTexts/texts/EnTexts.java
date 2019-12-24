@@ -8,7 +8,7 @@ public enum EnTexts {
     adminCheckWrong(" Sorry you are not admin for this chat. "),
     removedSilentUser(" Silent user was removed after delay. Meow! "),
     newbieAnswerNotEqualsToGeneratedOne(" Wrong. Sorry entered data is not match with generated one. You will be banned! "),
-    newbieCheckSuccess(" Right! Now you can send messages to group. Have a nice chatting. "),
+    newbieCheckSuccess(" Right! Now you can send messages to group. But we will watch for your actions in chat. If we will detect bot actions you will be removed. Have a nice chatting. "),
     newbieAnswerContainsOnlyLetters("  Wrong. Sorry entered DATA contains only letters. You will be banned! "),
     changeDefaultLanguage(" Language successfully changed to "),
     optionSetSuccess(" Defined option was set successfully "),

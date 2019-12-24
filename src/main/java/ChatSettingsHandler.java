@@ -13,7 +13,7 @@ class ChatSettingsHandler {
     /* ------------------------------------ Initialising ------------------------------------ */
     // initialising settings from settings file to memory of bot
 
-    public static void initialiseSettingsFromFileToMemory() {
+    public static void initialiseSettingsFromSettingsFileToMemory() {
 
         log.info("Initialising settings from settings file to memory of bot ");
         log.info("Absolute path to working dir is: " + Main.absolutePath);
