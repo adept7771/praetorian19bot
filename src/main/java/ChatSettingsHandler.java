@@ -253,25 +253,55 @@ class ChatSettingsHandler {
 
                 log.info("Current string with settings is: " + lineWithAllParams);
 
-                int indexOfFirstComma = lineWithAllParams.indexOf(",");
-
                 // get id of chat from string
+                int indexOfFirstComma = lineWithAllParams.indexOf(",");
                 long idOfChat = Long.valueOf(lineWithAllParams.substring(1, indexOfFirstComma -1 ));
 
                 mapWithSettings.put(idOfChat, new HashMap<>());
+                int trimIndexFrom = 0, trimIndexTo = 0;
+                String trimmedCommandLine = "";
 
-                for (int i = indexOfFirstComma; i < lineWithAllParams.length() - 1; i++) {
-                    if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
-                        int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
-                        if (nextIndexOfComma == -1) {
-                            nextIndexOfComma = lineWithAllParams.length();
+                // parse line with chat options to separate options
+                for (int i = indexOfFirstComma + 1; i < lineWithAllParams.length() - 1; i++) {
+
+                    String currentCharInLine = String.valueOf(lineWithAllParams.charAt(i));
+
+                    if(currentCharInLine.equals("\"")){
+                        if(trimIndexFrom == 0){
+                            trimIndexFrom = i;
                         }
-                        String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
-                        mapWithSettings.get(idOfChat).put(
-                                dataToWrite.substring(0, dataToWrite.indexOf("=")),
-                                dataToWrite.substring(dataToWrite.indexOf("=") + 1)
-                        );
+                        if (trimIndexFrom != 0 && trimIndexTo == 0 && i != trimIndexFrom){
+                            trimIndexTo = i;
+                        }
+                        if(trimIndexFrom < trimIndexTo){
+                            trimmedCommandLine = lineWithAllParams.substring(trimIndexFrom + 1, trimIndexTo);
+                            trimIndexFrom = 0;
+                            trimIndexTo = 0;
+                        }
                     }
+
+                    if(!trimmedCommandLine.isEmpty()){
+                        System.out.println(trimmedCommandLine);
+                        trimmedCommandLine = "";
+                    }
+
+//                    if (String.valueOf(lineWithAllParams.charAt(i)).equals("\"")) {
+//
+//
+//
+//
+//
+//
+//                        int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
+//                        if (nextIndexOfComma == -1) {
+//                            nextIndexOfComma = lineWithAllParams.length();
+//                        }
+//                        String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
+//                        mapWithSettings.get(idOfChat).put(
+//                                dataToWrite.substring(0, dataToWrite.indexOf("=")),
+//                                dataToWrite.substring(dataToWrite.indexOf("=") + 1)
+//                        );
+//                    }
                 }
                 log.info("Parsed all params for ChatID into map: " + idOfChat);
             }
