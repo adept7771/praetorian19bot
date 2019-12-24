@@ -41,34 +41,16 @@ class ChatSettingsHandler {
             ChatSettingsHandler.lastSettingsFileUpdateTime = updateTime;
             log.info("Memory update time: " + Main.lastMemorySettingsUpdateTime);
         }
-
-//        //Создаем поток-чтения-байт-из-файла
-//        FileInputStream inputStream = new FileInputStream("c:/data.txt");
-//        // Создаем поток-записи-байт-в-файл
-//        FileOutputStream outputStream = new FileOutputStream("c:/result.txt");
-//
-//        while (inputStream.available() > 0) //пока есть еще непрочитанные байты
-//        {
-//            int data = inputStream.read(); // прочитать очередной байт в переменную data
-//            outputStream.write(data); // и записать его во второй поток
-//        }
-//
-//        inputStream.close(); //закрываем оба потока. Они больше не нужны.
-//        outputStream.close();
-
-        //log.info("test");
     }
 
     /* ------------------------------------ MEMORY HANDLING ------------------------------------ */
 
     static public void setSetupOptionValueInMemory(String setupOptionName, String setupOptionValue, long chatId) {
-        HashMap<String, String> optionsToStore = new HashMap<String, String>();
+        HashMap<String, String> optionsToStore = new HashMap<>();
         optionsToStore.put(setupOptionName, setupOptionValue);
-        if (getSetupOptionValueFromMemory(setupOptionName, chatId) == null) {
-            Main.userSettingsInMemory.put(chatId, optionsToStore);
-        } else {
-            Main.userSettingsInMemory.get(chatId).put(setupOptionName, setupOptionValue);
-        }
+
+        Main.userSettingsInMemory.get(chatId).put(setupOptionName, setupOptionValue);
+
         log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set into memory");
 
         Main.lastMemorySettingsUpdateTime = (new Date().getTime()) / 1000;
@@ -108,7 +90,7 @@ class ChatSettingsHandler {
 
     /* -------------------------------- SETTINGS FILE HANDLING ------------------------------------ */
 
-    public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime(){
+    public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime() {
         log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: " + ChatSettingsHandler.lastSettingsFileUpdateTime);
         return Main.lastMemorySettingsUpdateTime == ChatSettingsHandler.lastSettingsFileUpdateTime;
     }
@@ -119,15 +101,15 @@ class ChatSettingsHandler {
 
         HashMap<Long, HashMap<String, String>> copyOfCurrentSettingsFileInMapView = parseSettingsFileInMap(settingsFile);
 
-        if(copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() == 0){
+        if (copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() == 0) {
             log.info("Settings in memory and in file is empty both.");
             return true;
         }
-        if(copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() > 0) {
+        if (copyOfCurrentSettingsFileInMapView.size() == 0 && Main.userSettingsInMemory.size() > 0) {
             log.info("Settings in memory not empty, but settings in file is empty.");
             return false;
         }
-        if(copyOfCurrentSettingsFileInMapView.size() > 0 && Main.userSettingsInMemory.size() > 0) {
+        if (copyOfCurrentSettingsFileInMapView.size() > 0 && Main.userSettingsInMemory.size() > 0) {
             log.info("Settings in memory not empty, settings in file is not empty. Start comparing");
 
             Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
@@ -210,12 +192,12 @@ class ChatSettingsHandler {
         }
     }
 
-    public static void writeMapWithSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToStore){
+    public static void writeMapWithSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToStore) {
         try {
             FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
             ArrayList<String> listOfDataToWrite = convertMapWithSettingsToList(mapWithSettingsToStore);
             StringBuilder stringDataToWrite = new StringBuilder();
-            for(String currentString : listOfDataToWrite){
+            for (String currentString : listOfDataToWrite) {
                 stringDataToWrite.append(currentString);
             }
 
@@ -231,7 +213,7 @@ class ChatSettingsHandler {
         }
     }
 
-    static ArrayList<String> convertMapWithSettingsToList(HashMap<Long, HashMap<String, String>> mapWithSettings){
+    static ArrayList<String> convertMapWithSettingsToList(HashMap<Long, HashMap<String, String>> mapWithSettings) {
         ArrayList<String> listOfDataToWrite = new ArrayList<>();
 
         Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = mapWithSettings.entrySet().iterator();
@@ -247,7 +229,7 @@ class ChatSettingsHandler {
 
             Iterator<Map.Entry<String, String>> iterator2 = currentMapFromMapWithSettings.entrySet().iterator();
 
-            while (iterator2.hasNext()){
+            while (iterator2.hasNext()) {
                 Map.Entry<String, String> pair2 = iterator2.next();
                 String optionName = pair2.getKey();
                 String optionvalue = pair2.getValue();
@@ -296,10 +278,9 @@ class ChatSettingsHandler {
 
     static HashMap<Long, HashMap<String, String>> parseSettingsArrayListInSettingsMap(ArrayList<String> listOfParametersFromSettingsFile) {
 
-        if(listOfParametersFromSettingsFile.size() == 0 || listOfParametersFromSettingsFile.get(0).equals(" ")){
+        if (listOfParametersFromSettingsFile.size() == 0 || listOfParametersFromSettingsFile.get(0).equals(" ")) {
             return new HashMap<Long, HashMap<String, String>>();
-        }
-        else {
+        } else {
             HashMap<Long, HashMap<String, String>> mapWithSettings = new HashMap<>();
 
             for (String lineWithAllParams : listOfParametersFromSettingsFile) {
@@ -311,7 +292,7 @@ class ChatSettingsHandler {
 
                 mapWithSettings.put(idOfChat, new HashMap<>());
 
-                for (int i = indexOfFirstComma; i < lineWithAllParams.length()-1; i++) {
+                for (int i = indexOfFirstComma; i < lineWithAllParams.length() - 1; i++) {
                     if (String.valueOf(lineWithAllParams.charAt(i)).equals(",")) {
                         int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
                         if (nextIndexOfComma == -1) {

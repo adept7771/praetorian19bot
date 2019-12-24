@@ -2,7 +2,8 @@ package commandsAndTexts.texts;
 
 public enum EnTexts {
 
-    defaultGreetings(" Hi! Antispam filter! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned. How much will be: "),
+    defaultGreetings(" Hi! Antispam filter! Please answer by replying TO THIS message. All other messages will be deleted and you'll be banned."),
+    halfGreetings(" \n\n How much will be: "),
     spammerBanned(" Spamer banned and spam deleted! Praetorians at your service. Meow! "),
     adminCheckWrong(" Sorry you are not admin for this chat. "),
     removedSilentUser(" Silent user was removed after delay. Meow! "),
@@ -10,6 +11,8 @@ public enum EnTexts {
     newbieCheckSuccess(" Right! Now you can send messages to group. Have a nice chatting. "),
     newbieAnswerContainsOnlyLetters("  Wrong. Sorry entered DATA contains only letters. You will be banned! "),
     changeDefaultLanguage(" Language successfully changed to "),
+    optionSetSuccess(" Defined option was set successfully "),
+    optionSetError(" Something going wrong while try to set option. Maybe you're not an admin or your command doesn't have a right format? "),
     ;
 
     public String value;

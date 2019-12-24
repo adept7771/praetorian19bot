@@ -1,3 +1,4 @@
+import commandsAndTexts.commands.CommandsEn;
 import commandsAndTexts.texts.EnTexts;
 import commandsAndTexts.texts.RuTexts;
 import org.apache.log4j.Logger;
@@ -34,16 +35,19 @@ public class Bot extends TelegramLongPollingBot {
 
         final long currentDateTime = (new Date().getTime()) / 1000;
 
-        // cut old updates to prevent commands overloading
+        // kill old updates to prevent commands overloading
         if(update.hasMessage()){
-            if(currentDateTime > update.getMessage().getDate()){
-                log.info("Update is older then now time. Ignoring update: " + update.getUpdateId());
+            if((currentDateTime - update.getMessage().getDate()) > 90){
+                log.info("Update is not actual and older then 90 seconds from now time. Ignoring update: " + update.getUpdateId());
+                update = null;
+                System.gc();
                 return;
             }
             else {
-                log.info("Full update: " + update.toString());
+                log.info("Update is actual. Processing. Full update: " + update.toString());
                 currentUpdate = update;
-                // TODO: kill update variable in memory
+                update = null;
+                System.gc();
             }
         }
 
@@ -155,7 +159,7 @@ public class Bot extends TelegramLongPollingBot {
 
                     // COMMANDS HANDLING -------------------------------->
                     if (messageText != null && messageText.contains("/")) {
-                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
+                        AdminCommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
                     }
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
@@ -461,8 +465,15 @@ public class Bot extends TelegramLongPollingBot {
 
                 // Send warning greetings message with generated digits
                 String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
+
+                if(ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId) != null){
+                    warningMessage = ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId);
+                }
+                warningMessage += getTemplateTextForCurrentLanguage(EnTexts.halfGreetings.name(), chatId);
+
                 String userName = user.getUserName();
-                String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionToChat(chatId);
+                final String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionToChat(chatId);
+
                 if(userName == null){
                     sendMessageToChatID(chatId, warningMessage + " " +
                             NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
