@@ -37,28 +37,33 @@ public class AdminCommandsHandler {
 
             try {
                 boolean enteredCommandWithValue = true;
+
+                // Show help for command ----------------------------- */
                 if (currentChatLanguage.equals("en")) {
                     for (CommandsEn commands : CommandsEn.values()) { // send help for command
                         if (messageText.toLowerCase().equals("/" + commands.name().toLowerCase() + "@" + Main.bot.getBotUsername())) {
-                            log.info("Message test contains - command name: " + commands.name());
+                            log.info("Message text contains - command name: " + commands.name());
                             helpText = commands.value;
                             Main.bot.sendReplyMessageToChatID(chatId, helpText, messageId); // sending help
-                            enteredCommandWithValue = false; // if command from standart default list without value
+                            enteredCommandWithValue = false; // if command from default list without value
                         }
                     }
                 } else if (currentChatLanguage.equals("ru")) {
                     for (CommandsRu commands : CommandsRu.values()) { // send help for command
                         if (messageText.toLowerCase().equals("/" + commands.name().toLowerCase() + "@" + Main.bot.getBotUsername())) {
-                            log.info("Message test contains - command name: " + commands.name());
+                            log.info("Message text contains - command name: " + commands.name());
                             helpText = commands.value;
                             Main.bot.sendReplyMessageToChatID(chatId, helpText, messageId); // sending help
-                            enteredCommandWithValue = false; // if command from standart default list without value
+                            enteredCommandWithValue = false; // if command from default list without value
                         }
                     }
-                } // if command not exactly in list because contains options value we must handle it separate
+                }
+
+                // if command not exactly in list because contains options value we must handle it separate
                 if (enteredCommandWithValue) {
                     recognizeAndHandleCommand(messageText, isUpdatePersonalDirectMessage, chatId, update);
                 }
+
             } catch (Exception e) {
                 log.info("Something going wrong. Command not recognized or is not in command list: " + messageText + " " + e.toString());
             }
@@ -78,15 +83,18 @@ public class AdminCommandsHandler {
             if (Main.bot.isUserAdminInChat(update.getMessage().getFrom().getId(), chatId)) {
                 // if user admin in chat
                 log.warn("Defining chat language option for chat: " + chatId);
-                if (command.equals("en")) {
+                if (command.contains("en")) {
                     ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "En", chatId);
                     Main.bot.sendMessageToChatID(chatId, EnTexts.changeDefaultLanguage.value + " English ");
-                } else if (command.equals("ru")) {
+                    return;
+                } else if (command.contains("ru")) {
                     ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "Ru", chatId);
                     Main.bot.sendMessageToChatID(chatId, RuTexts.changeDefaultLanguage.value + " Русский ");
+                    return;
                 }
             } else { // if not an admin
                 Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name(), true);
+                return;
             }
         }
         else {
@@ -103,7 +111,7 @@ public class AdminCommandsHandler {
                 Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetError.name(), true);
             }
             else {
-                final String welcomeText = command.substring(CommandsEn.welcometext.name().length()+1);
+                final String welcomeText = command.substring(CommandsEn.welcometext.name().length()+1).replaceAll("\"", "'");
                 ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.welcometext.name(), welcomeText, chatId);
                 log.warn("Entered text is set! For chat " + chatId);
                 if(currentChatLanguage.contains("en")){

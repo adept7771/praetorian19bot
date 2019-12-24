@@ -36,14 +36,13 @@ public class Bot extends TelegramLongPollingBot {
         final long currentDateTime = (new Date().getTime()) / 1000;
 
         // kill old updates to prevent commands overloading
-        if(update.hasMessage()){
-            if((currentDateTime - update.getMessage().getDate()) > 90){
+        if (update.hasMessage()) {
+            if ((currentDateTime - update.getMessage().getDate()) > 90) {
                 log.info("Update is not actual and older then 90 seconds from now time. Ignoring update: " + update.getUpdateId());
                 update = null;
                 System.gc();
                 return;
-            }
-            else {
+            } else {
                 log.info("Update is actual. Processing. Full update: " + update.toString());
                 currentUpdate = update;
                 update = null;
@@ -52,26 +51,21 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         final String regex = "(.)*(\\d)(.)*"; // for check digits in answer
-        final Pattern pattern = Pattern.compile(regex);
+        final Pattern pattern = Pattern.compile(regex); // for check digits in answer
 
         final long chatId = currentUpdate.getMessage().getChatId();
         boolean isUpdateFromBot = false, isUpdateContainsReply = false, replyMessageInChatContainsBotName = false,
-            messageInChatContainsBotName = false, isUpdateContainsPersonalPublicMessageToBot = false;
+                messageInChatContainsBotName = false, isUpdateContainsPersonalPublicMessageToBot = false;
         boolean isUpdateHasMessage = false;
         Message replyMessage = null;
 
-        if(currentUpdate.hasMessage()){
+        if (currentUpdate.hasMessage()) {
             isUpdateHasMessage = true;
         }
 
         // periodic task which check settings in memory and in settings file by update time
-        if(!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()){
-            // initial comparing
-            if(!ChatSettingsHandler.compareAllSettingsInMemoryAndInFile()){
-                // all settings at first is stored in mem so mem settings in all cases will be newer then
-                // settings in file. So we must copy all settings from memory into settings file
-                ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
-            }
+        if (!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()) {
+            ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
         }
 
         try { // if it reply message save it into variable
@@ -94,7 +88,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         // LEFT MEMBERS update handling we must remove it from newbies list if user from there
-        if(isUpdateHasMessage){
+        if (isUpdateHasMessage) {
             if (currentUpdate.getMessage().getLeftChatMember() != null) {
                 User leftChatMember = currentUpdate.getMessage().getLeftChatMember();
                 if (!leftChatMember.getBot()) {
@@ -110,8 +104,7 @@ public class Bot extends TelegramLongPollingBot {
         // NEW MEMBERS update handling with attention message: -------------------------------->
         if (!Bot.currentUpdate.getMessage().getNewChatMembers().isEmpty()) {
             newMembersWarningMessageAndQuestionGeneration();
-        }
-        else {
+        } else {
 
             // MESSAGES HANDLING ------------------------------------------------------------>
             if (isUpdateHasMessage) {
@@ -377,14 +370,13 @@ public class Bot extends TelegramLongPollingBot {
             log.info("Send text for message is empty. Nothing to say.");
             return;
         }
-        if(userToMention != null){ // turning on inline mentioning by user id if username is null
+        if (userToMention != null) { // turning on inline mentioning by user id if username is null
             messageText = "<a href=\"tg://user?id=" + userToMention.getId() + "\">" +
                     (userToMention.getFirstName() != null ? userToMention.getFirstName() : "") +
                     (userToMention.getLastName() != null ? " " + userToMention.getLastName() : "") +
                     "</a> " + messageText;
             message.setChatId(chatId).setText(messageText).enableHtml(true);
-        }
-        else { // send message in it not null
+        } else { // send message in it not null
             message.setChatId(chatId).setText(messageText);
         }
         try {
@@ -466,7 +458,7 @@ public class Bot extends TelegramLongPollingBot {
                 // Send warning greetings message with generated digits
                 String warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
 
-                if(ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId) != null){
+                if (ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId) != null) {
                     warningMessage = ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId);
                 }
                 warningMessage += getTemplateTextForCurrentLanguage(EnTexts.halfGreetings.name(), chatId);
@@ -474,14 +466,13 @@ public class Bot extends TelegramLongPollingBot {
                 String userName = user.getUserName();
                 final String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionToChat(chatId);
 
-                if(userName == null){
+                if (userName == null) {
                     sendMessageToChatID(chatId, warningMessage + " " +
-                            NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
-                            + " + "
-                            + NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat, true)
+                                    NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
+                                    + " + "
+                                    + NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat, true)
                             , user);
-                }
-                else {
+                } else {
                     userName = "@" + userName;
                     sendMessageToChatID(chatId, userName + warningMessage + " " +
                             NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
