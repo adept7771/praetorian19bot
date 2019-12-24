@@ -247,6 +247,7 @@ class ChatSettingsHandler {
         if (listOfParametersFromSettingsFile.size() == 0 || listOfParametersFromSettingsFile.get(0).equals(" ")) {
             return new HashMap<Long, HashMap<String, String>>();
         } else {
+
             HashMap<Long, HashMap<String, String>> mapWithSettings = new HashMap<>();
 
             for (String lineWithAllParams : listOfParametersFromSettingsFile) {
@@ -279,29 +280,13 @@ class ChatSettingsHandler {
                             trimIndexTo = 0;
                         }
                     }
-
+                    // trim chat option and value from string of format "chatOption=chatValue"
                     if(!trimmedCommandLine.isEmpty()){
-                        System.out.println(trimmedCommandLine);
+                        final String chatOption = trimmedCommandLine.substring(0, trimmedCommandLine.indexOf("="));
+                        final String chatValue = trimmedCommandLine.substring(trimmedCommandLine.indexOf("=")+1);
+                        mapWithSettings.get(idOfChat).put(chatOption, chatValue);
                         trimmedCommandLine = "";
                     }
-
-//                    if (String.valueOf(lineWithAllParams.charAt(i)).equals("\"")) {
-//
-//
-//
-//
-//
-//
-//                        int nextIndexOfComma = lineWithAllParams.indexOf(",", i + 1);
-//                        if (nextIndexOfComma == -1) {
-//                            nextIndexOfComma = lineWithAllParams.length();
-//                        }
-//                        String dataToWrite = lineWithAllParams.substring(i + 1, nextIndexOfComma);
-//                        mapWithSettings.get(idOfChat).put(
-//                                dataToWrite.substring(0, dataToWrite.indexOf("=")),
-//                                dataToWrite.substring(dataToWrite.indexOf("=") + 1)
-//                        );
-//                    }
                 }
                 log.info("Parsed all params for ChatID into map: " + idOfChat);
             }
