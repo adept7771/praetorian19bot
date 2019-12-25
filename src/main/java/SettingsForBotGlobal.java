@@ -1,8 +1,8 @@
 public enum SettingsForBotGlobal {
 
     botType("false"), // false - test bot and true - production
-    timePeriodForSilentUsersByDefault("1000"), // time period when newbie can be silent without removing 60 = minute
-    timePeriodForSecondaryApproveUser("86400"), // interval after first approve. If user will be silent he will be kicked
+    timePeriodForSilentUsersByDefault("70"), // 1000 time period when newbie can be silent without removing 60 = minute
+    timePeriodForSecondaryApproveUser("100"), // 86 400 interval after first approve. If user will be silent he will be kicked
     settingsFileName("/settings.txt"), // filename where bot stores user settings in text mode
 
     tokenForProduction("868108811:AAFEBVlByhnZhYs0heohMiN0bsqDM_nn6IM"), // token types
