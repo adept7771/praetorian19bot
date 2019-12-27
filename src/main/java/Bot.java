@@ -96,10 +96,10 @@ public class Bot extends TelegramLongPollingBot {
 
         // First Periodic task to check users who doesn't say everything
         log.info("Current newbie first check lists size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-        firstCheckAndRemoveAllSilentUsers(currentDateTime);
+        boolean firstCheckSilentUsersIsRemoved = firstCheckAndRemoveAllSilentUsers(currentDateTime);
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
-        if (!Bot.currentUpdate.getMessage().getNewChatMembers().isEmpty()) {
+        if (Bot.currentUpdate.getMessage().getNewChatMembers().size() > 0) {
             newMembersWarningMessageAndQuestionGeneration();
         } else {
 
@@ -109,10 +109,12 @@ public class Bot extends TelegramLongPollingBot {
                 String messageText = currentUpdate.getMessage().getText();
                 int messageId = currentUpdate.getMessage().getMessageId();
 
-                // Second periodic task to clean silent users
-                secondaryCheckAndRemoveSilentUser(currentDateTime);
+                // Second periodic task to clean silent users if first check is not done
+                if (!firstCheckSilentUsersIsRemoved) {
+                    secondaryCheckAndRemoveSilentUser(currentDateTime);
+                }
 
-                // is it reply message contains bot name?
+                // is reply message contains bot name?
                 if (replyMessage != null) {
                     try {
                         log.info("Reply message contains name: " + currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName());
@@ -124,7 +126,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 }
 
-                // if it direct message in chat, check that message contains bot name
+                // if it is a direct message in chat, check that message contains bot name
                 try {
                     messageInChatContainsBotName = messageText.contains("@" + getBotUsername());
                 } catch (NullPointerException e) {
@@ -175,7 +177,8 @@ public class Bot extends TelegramLongPollingBot {
 
     /* ----------------------------- MAIN METHODS ------------------------------------------------------------ */
 
-    public void firstCheckAndRemoveAllSilentUsers(long currentDateTime) {
+    public boolean firstCheckAndRemoveAllSilentUsers(long currentDateTime) {
+        boolean isUsersWasRemoved = false;
         for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) Main.newbieMapWithGeneratedAnswers.entrySet()) {
 
             log.info("Iterating newbie lists.");
@@ -207,8 +210,11 @@ public class Bot extends TelegramLongPollingBot {
 
                 final String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
                 sendMessageToChatID(chatIdFromMainClass, textToSay);
+
+                isUsersWasRemoved = true;
             }
         }
+        return isUsersWasRemoved;
     }
 
     public void secondaryCheckAndRemoveSilentUser(long currentDateTime) {
@@ -414,11 +420,16 @@ public class Bot extends TelegramLongPollingBot {
 
                 log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                Main.usersToSecondaryApprove.get(chatId).remove(newbieId);
-                log.info("Secondary approve list size for chat: " + chatId + " is " + Main.usersToSecondaryApprove.get(chatId).size());
-                if(Main.usersToSecondaryApprove.get(chatId).size() == 0){
-                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.usersToSecondaryApprove.get(chatId).size() + " removing map from memory");
-                    Main.usersToSecondaryApprove.remove(chatId);
+                try {
+                    Main.usersToSecondaryApprove.get(chatId).remove(newbieId);
+                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.usersToSecondaryApprove.get(chatId).size());
+                    if(Main.usersToSecondaryApprove.get(chatId).size() == 0){
+                        log.info("Secondary approve list size for chat: " + chatId + " is " + Main.usersToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                        Main.usersToSecondaryApprove.remove(chatId);
+                    }
+                }
+                catch (Exception e){
+
                 }
 
                 kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
@@ -539,10 +550,11 @@ public class Bot extends TelegramLongPollingBot {
                 int randomDigit2 = ThreadLocalRandom.current().nextInt(1, 1001);
                 int answerDigit = randomDigit + randomDigit2;
 
+                long chatId = Bot.currentUpdate.getMessage().getChatId();
+
                 // put user to first check silent map
                 Main.newbieMapWithGeneratedAnswers.put(userId, answerDigit);
                 Main.newbieMapWithJoinTime.put(userId, new Date().getTime() / 1000);
-                long chatId = Bot.currentUpdate.getMessage().getChatId();
                 Main.newbieMapWithChatId.put(userId, chatId);
 
                 // put user in secondary check silent map
