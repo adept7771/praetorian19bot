@@ -94,9 +94,12 @@ public class Bot extends TelegramLongPollingBot {
             }
         }
 
-        // First Periodic task to check users who doesn't say everything
-        log.info("Current newbie first check lists size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-        boolean firstCheckSilentUsersIsRemoved = firstCheckAndRemoveAllSilentUsers(currentDateTime);
+        // First Periodic task to check users who didn't say everything
+        boolean firstCheckSilentUsersIsRemoved = false;
+        if(Main.newbieMapWithChatId.size() > 0){
+            log.info("Current newbie first check lists size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+            firstCheckSilentUsersIsRemoved = firstCheckAndRemoveSilentUsrFromAllLists(currentDateTime);
+        }
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
         if (Bot.currentUpdate.getMessage().getNewChatMembers().size() > 0) {
@@ -177,8 +180,14 @@ public class Bot extends TelegramLongPollingBot {
 
     /* ----------------------------- MAIN METHODS ------------------------------------------------------------ */
 
-    public boolean firstCheckAndRemoveAllSilentUsers(long currentDateTime) {
+    public boolean firstCheckAndRemoveSilentUsrFromAllLists(long currentDateTime) {
+
         boolean isUsersWasRemoved = false;
+
+        if(Main.newbieMapWithChatId.size() == 0){
+            return false;
+        }
+
         for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) Main.newbieMapWithGeneratedAnswers.entrySet()) {
 
             log.info("Iterating newbie lists.");
@@ -198,14 +207,20 @@ public class Bot extends TelegramLongPollingBot {
                 Main.newbieMapWithJoinTime.remove(userIdFromMainClass);
                 Main.newbieMapWithChatId.remove(userIdFromMainClass);
 
-                Main.newbieToSecondaryApprove.get(chatIdFromMainClass).remove(userIdFromMainClass);
-
                 log.info("Silent user removed. First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-                log.info("Secondary approve list size: " + Main.newbieToSecondaryApprove.size());
 
-                if (Main.newbieToSecondaryApprove.get(chatIdFromMainClass).size() == 0) {
-                    log.warn("List of secondary check for silent users is empty, deleting it. Chat id: " + userIdFromMainClass);
-                    Main.newbieToSecondaryApprove.remove(chatIdFromMainClass);
+                if(Main.newbieToSecondaryApprove.containsKey(chatIdFromMainClass)){
+
+                    if(Main.newbieToSecondaryApprove.get(chatIdFromMainClass).containsKey(userIdFromMainClass)){
+                        Main.newbieToSecondaryApprove.get(chatIdFromMainClass).remove(userIdFromMainClass);
+
+                        log.info("Secondary approve list, user " + userIdFromMainClass +  " was removed for chat: " + chatIdFromMainClass);
+                    }
+
+                    if (Main.newbieToSecondaryApprove.get(chatIdFromMainClass).size() == 0) {
+                        log.warn("List of secondary check for silent users is empty, deleting it. Chat id: " + userIdFromMainClass);
+                        Main.newbieToSecondaryApprove.remove(chatIdFromMainClass);
+                    }
                 }
 
                 final String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
