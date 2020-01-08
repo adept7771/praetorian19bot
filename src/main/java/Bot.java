@@ -60,6 +60,17 @@ public class Bot extends TelegramLongPollingBot {
             chatId = currentUpdate.getMessage().getChatId();
         }
 
+        // LEFT MEMBERS update handling we must remove it from newbies list if user from there
+        if (isUpdateHasMessage) {
+            if (currentUpdate.getMessage().getLeftChatMember() != null) {
+                User leftChatMember = currentUpdate.getMessage().getLeftChatMember();
+                if (!leftChatMember.getBot()) {
+                    removeLeftMemberFromAllNewbieLists(leftChatMember.getId());
+                    return;
+                }
+            }
+        }
+
         // periodic task which compare settings in memory and in settings file by update time
         if (!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()) {
             ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
@@ -84,15 +95,7 @@ public class Bot extends TelegramLongPollingBot {
             isUpdateFromBot = false;
         }
 
-        // LEFT MEMBERS update handling we must remove it from newbies list if user from there
-        if (isUpdateHasMessage) {
-            if (currentUpdate.getMessage().getLeftChatMember() != null) {
-                User leftChatMember = currentUpdate.getMessage().getLeftChatMember();
-                if (!leftChatMember.getBot()) {
-                    removeLeftMemberFromAllNewbieLists(leftChatMember.getId());
-                }
-            }
-        }
+
 
         // First and second Periodic tasks to check silent users by timeout
         if (Main.newbieMapWithChatId.size() > 0) {
@@ -568,15 +571,19 @@ public class Bot extends TelegramLongPollingBot {
             Main.newbieMapWithGeneratedAnswers.remove(leftUserId);
             Main.newbieMapWithJoinTime.remove(leftUserId);
             Main.newbieMapWithChatId.remove(leftUserId);
-            log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists.");
+            log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists. Removing from first list.");
+            log.info("First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                    + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
         }
-        if (Main.newbieToSecondaryApprove.containsKey(currentUpdate.getMessage().getChatId())) {
+        long chatId = currentUpdate.getMessage().getChatId();
+        if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
             if (Main.newbieToSecondaryApprove.get(currentUpdate.getMessage().getChatId()).containsKey(leftUserId)) {
-
-                Main.newbieToSecondaryApprove.get(currentUpdate.getMessage().getChatId()).remove(leftUserId);
-
-                log.info("First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
-                        + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                log.info("Removing user: " + leftUserId + " from second list");
+                Main.newbieToSecondaryApprove.get(chatId).remove(leftUserId);
+                if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
+                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                    Main.newbieToSecondaryApprove.remove(chatId);
+                }
                 log.info("Secondary newbie list size: " + Main.newbieToSecondaryApprove.size());
             }
         }
