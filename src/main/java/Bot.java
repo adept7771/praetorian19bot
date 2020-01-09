@@ -4,6 +4,7 @@ import commandsAndTexts.texts.RuTexts;
 import org.apache.log4j.Logger;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatAdministrators;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.KickChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -56,7 +57,7 @@ public class Bot extends TelegramLongPollingBot {
         if (currentUpdate.hasMessage()) {
             isUpdateHasMessage = true;
         }
-        if(isUpdateHasMessage){
+        if (isUpdateHasMessage) {
             chatId = currentUpdate.getMessage().getChatId();
         }
 
@@ -94,7 +95,6 @@ public class Bot extends TelegramLongPollingBot {
             log.info("Exception while recognizing update from bot. Ignoring. " + e);
             isUpdateFromBot = false;
         }
-
 
 
         // First and second Periodic tasks to check silent users by timeout
@@ -207,11 +207,12 @@ public class Bot extends TelegramLongPollingBot {
             if ((currentDateTime - joinTimeFromMainClass) > Long.valueOf(SettingsForBotGlobal.approveFirstlyTime.value)) {
 
                 log.info("Difference bigger then defined value! " + userIdFromMainClass + " will be kicked from chat");
-                kickChatMember(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
 
                 Main.newbieMapWithGeneratedAnswers.remove(userIdFromMainClass);
                 Main.newbieMapWithJoinTime.remove(userIdFromMainClass);
                 Main.newbieMapWithChatId.remove(userIdFromMainClass);
+
+                kickChatMember(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
 
                 log.info("Silent user removed. First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
@@ -225,6 +226,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
                     }
                 }
+
                 String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
                 sendMessageToChatID(chatIdFromMainClass, textToSay);
             }
@@ -313,11 +315,16 @@ public class Bot extends TelegramLongPollingBot {
                 .setUserId(userId)
                 .setUntilDate(((int) currentDateTime) + untilDateInSeconds);
 
-        try {
-            execute(kickChatMember);
-            log.info("User " + userId + " in chat id " + chatId + " was kicked");
-        } catch (TelegramApiException e) {
-            log.info("Error while try to kick user " + userId + " in chat id " + chatId + " " + e.toString());
+        if(isUserInChat(chatId, userId)){
+            try {
+                execute(kickChatMember);
+                log.info("User " + userId + " in chat id " + chatId + " was kicked");
+            } catch (TelegramApiException e) {
+                log.info("Error while try to kick user " + userId + " in chat id " + chatId + " " + e.toString());
+            }
+        }
+        else {
+            log.info("Can't kick user " + userId + " in chat id " + chatId + " because he is not in this chat!");
         }
     }
 
@@ -346,6 +353,31 @@ public class Bot extends TelegramLongPollingBot {
         }
         log.info("Error while trying to get admin status or user isn't in admin list. Return false by default.");
         return false;
+    }
+
+    public boolean isUserInChat(long chatId, int userId) {
+        GetChatMember getChatMember = new GetChatMember();
+
+        getChatMember.setChatId(chatId);
+        getChatMember.setUserId(userId);
+
+        ChatMember chatMember = new ChatMember();
+        try{
+            log.info("Try to check is userId " + userId + " is in chat: " + chatId);
+            chatMember = execute(getChatMember);
+        }
+        catch (Exception e){
+            log.info("Error while trying to recognize userId " + userId + "  in chat: " + chatId + " return false by default");
+            return false;
+        }
+        if(chatMember.getStatus().equals("left")){
+            log.info("userId " + userId + " is not in chat: " + chatId);
+            return false;
+        }
+        else {
+            log.info("userId " + userId + " is in chat: " + chatId);
+            return true;
+        }
     }
 
     public int normalizeUserAnswer(String stringToNormalize) { // method need if user send some text with digit answer

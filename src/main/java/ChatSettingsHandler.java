@@ -64,14 +64,19 @@ class ChatSettingsHandler {
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
-        try {
-            String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption.toLowerCase());
-            log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId + " . Option value is: " + optionValue);
-            return optionValue;
-        } catch (Exception e) {
-            log.info("Error while trying to get option from memory (it could be not initialised) " + setupOption + " for chat: " + chatId + " " + e.toString());
+        if(Main.userSettingsInMemory.containsKey(chatId)){
+            if(Main.userSettingsInMemory.get(chatId).containsKey(setupOption.toLowerCase())){
+                String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption.toLowerCase());
+                log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId + " . Option value is: " + optionValue);
+                return optionValue;
+            }
+        }
+        else {
+            log.info("There is no initialised setup option " + setupOption + " for chat: " + chatId + " in memory");
             return null;
         }
+        log.info("Error while trying to get option from memory (it could be not initialised) " + setupOption + " for chat: " + chatId + " return null for default");
+        return null;
     }
 
     static String getLanguageOptionToChat(long chatId) {

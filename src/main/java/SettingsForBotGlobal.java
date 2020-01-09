@@ -8,7 +8,7 @@ public enum SettingsForBotGlobal {
     tokenForProduction("868108811:AAFEBVlByhnZhYs0heohMiN0bsqDM_nn6IM"), // token types
     tokenForTest("976799861:AAGUy86YD4RHa7qXtyC9ncFyVpEoAr0XZR0"), //
 
-    adminUserId(""), //
+    adminUserId("168171351"), //
 
     languageByDefault("En"), // En, Ru
 
