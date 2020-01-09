@@ -11,7 +11,7 @@ public class AdminCommandsHandler {
 
     public static void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage, Update update) {
 
-        String currentChatLanguage = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
+        String currentChatLanguage = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
 
         /* ---------------- Print HELP for all messages in ONE message */
         if (messageText.contains("/help")) {
@@ -76,7 +76,7 @@ public class AdminCommandsHandler {
 
         String command = incCommand.toLowerCase();
         incCommand = null;
-        final String currentChatLanguage = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
+        final String currentChatLanguage = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
 
         // ----------- handle default language command for bot
         if (command.contains(CommandsEn.defaultlanguageadm.name().toLowerCase()) && !isUpdatePersonalDirectMessage) {

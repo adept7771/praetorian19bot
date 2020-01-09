@@ -7,6 +7,8 @@ import java.util.HashMap;
 
 public class Main {
 
+    public static final Logger log = Logger.getLogger(Main.class);
+
     public static String absolutePath = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
     static HashMap<Integer, Integer> newbieMapWithGeneratedAnswers = new HashMap<>();
@@ -17,8 +19,6 @@ public class Main {
     // ^ this hash map needed to secondary check that user is not a bot. User must wright something in defined time
     // interval after first approve. If it will not be done bot will kick this user from chat.
     // <Long - chatId, HashMap<Integer - userId, Long - joinTime >>
-
-    public static final Logger log = Logger.getLogger(Main.class);
 
     public static Bot bot;
 

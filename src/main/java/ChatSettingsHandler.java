@@ -2,6 +2,7 @@ import commandsAndTexts.commands.CommandsEn;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 class ChatSettingsHandler {
@@ -16,7 +17,16 @@ class ChatSettingsHandler {
     public static void initialiseSettingsFromSettingsFileToMemory() {
 
         log.info("Initialising settings from settings file to memory of bot ");
-        log.info("Absolute path to working dir is: " + Main.absolutePath);
+        log.info("Absolute path to working dir is: " + Main.absolutePath + " . Path contains jar name? Status: " + Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value));
+
+        if(Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value)){
+            log.warn("Absolute path contains jar filename - it must be cut!");
+            Main.absolutePath = Main.absolutePath.replace(SettingsForBotGlobal.executableJarFileName.value, "");
+            log.warn("Final path to executable file is: " + Main.absolutePath);
+
+            settingsFile = new File(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+        }
+
         log.info("Is settings file exists? " + settingsFile.exists());
 
         ArrayList<String> listOfAllChatParametersFromSettingsFile = parseSettingsFileIntoArrayList(settingsFile);
@@ -79,7 +89,7 @@ class ChatSettingsHandler {
         return null;
     }
 
-    static String getLanguageOptionToChat(long chatId) {
+    static String getLanguageOptionForChat(long chatId) {
         String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultlanguageadm.toString(), chatId);
         if (languageOption == null) {
             return SettingsForBotGlobal.languageByDefault.value;
@@ -164,20 +174,26 @@ class ChatSettingsHandler {
 
     public static void writeMapWithSettingsToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithSettingsToStore) {
         try {
-            FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+            //FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+
+            Writer out = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8));
+
             ArrayList<String> listOfDataToWrite = convertMapWithSettingsToList(mapWithSettingsToStore);
             StringBuilder stringDataToWrite = new StringBuilder();
             for (String currentString : listOfDataToWrite) {
                 stringDataToWrite.append(currentString);
             }
 
-            out.write(stringDataToWrite.toString().getBytes());
+            //out.write(stringDataToWrite.toString().getBytes());
+            out.append(stringDataToWrite.toString());
+            out.flush();
             out.close();
 
             log.info("Map with settings successfully wrote to settings file.");
             ChatSettingsHandler.lastSettingsFileUpdateTime = (new Date().getTime()) / 1000;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("Map with settings is NOT successfully wrote to settings file.");
             log.info(e);
         }
@@ -222,8 +238,12 @@ class ChatSettingsHandler {
             try { // create file if it not exists
                 log.info("File with setting not found. Creating it now.");
                 String data = " ";
-                FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
-                out.write(data.getBytes());
+                //FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
+                Writer out = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8));
+                //out.write(data.getBytes());
+                out.append(data);
+                out.flush();
                 out.close();
             } catch (Exception e) {
                 log.info("Error while trying to create file with settings: " + e);
@@ -232,7 +252,7 @@ class ChatSettingsHandler {
             try {
                 log.info("File with setting is found. Initialising it in MEMORY variable.");
 
-                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value))));
+                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8)));
 
                 while (fileReader.ready()) {
                     listOfParametersFromSettingsFile.add(fileReader.readLine());

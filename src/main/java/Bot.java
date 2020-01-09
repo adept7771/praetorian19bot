@@ -561,7 +561,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendMessageToChatID(long chatId, String messageText, boolean messageTextIsTemplateText) {
-        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
             sendMessageToChatID(chatId, RuTexts.getValueForKey(messageText));
         } else if (language.contains("en") && messageTextIsTemplateText) {
@@ -588,7 +588,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
-        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
             sendReplyMessageToChatID(chatId, RuTexts.getValueForKey(messageText), replyToMessageId);
         } else if (language.contains("en") && messageTextIsTemplateText) {
@@ -668,7 +668,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
 
                 String userName = user.getUserName();
-                final String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionToChat(chatId);
+                final String chatLanguageOptionForChat = ChatSettingsHandler.getLanguageOptionForChat(chatId);
 
                 if (userName == null) {
                     sendMessageToChatID(chatId, warningMessage + " " +
@@ -690,7 +690,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public String getTemplateTextForCurrentLanguage(String templateTextName, long chatId) {
-        String language = ChatSettingsHandler.getLanguageOptionToChat(chatId).toLowerCase();
+        String language = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
         if (language.contains("ru")) {
             return RuTexts.getValueForKey(templateTextName);
         } else if (language.contains("en")) {
