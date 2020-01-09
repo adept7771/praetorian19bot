@@ -226,7 +226,7 @@ class ChatSettingsHandler {
                 out.write(data.getBytes());
                 out.close();
             } catch (Exception e) {
-                log.info("Error while trying to create file with settings");
+                log.info("Error while trying to create file with settings: " + e);
             }
         } else {
             try {
