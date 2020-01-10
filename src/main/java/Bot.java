@@ -370,7 +370,7 @@ public class Bot extends TelegramLongPollingBot {
             log.info("Error while trying to recognize userId " + userId + "  in chat: " + chatId + " return false by default");
             return false;
         }
-        if(chatMember.getStatus().equals("left")){
+        if(chatMember.getStatus().equals("left") && chatMember.getStatus().equals("kicked")){
             log.info("userId " + userId + " is not in chat: " + chatId);
             return false;
         }
