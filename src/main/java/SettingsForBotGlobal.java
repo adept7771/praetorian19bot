@@ -1,6 +1,6 @@
 public enum SettingsForBotGlobal {
 
-    botType("false"), // false - test bot and true - production
+    botType("true"), // false - test bot and true - production
     approveFirstlyTime("1000"), // 70 for test 1000 for prod time period when newbie can be silent without removing 60 = minute
     approveSecondaryTime("400"), // 100 for test 400 for prod interval after first approve. If user will be silent he will be kicked
     settingsFileName("/settings.txt"), // filename where bot stores user settings in text mode

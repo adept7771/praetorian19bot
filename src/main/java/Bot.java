@@ -165,12 +165,14 @@ public class Bot extends TelegramLongPollingBot {
 
                     // COMMANDS HANDLING -------------------------------->
                     if (messageText != null && messageText.contains("/")) {
-                        AdminCommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
+                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
+                        return;
                     }
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
                     if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
                         validateNewbieAnswer(currentUpdate, messageText, pattern, chatId, messageId, currentDateTime);
+                        return;
                     }
                 } else { // no mentions of bot or personal public messages to him
 
