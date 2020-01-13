@@ -214,7 +214,7 @@ public class Bot extends TelegramLongPollingBot {
                 Main.newbieMapWithJoinTime.remove(userIdFromMainClass);
                 Main.newbieMapWithChatId.remove(userIdFromMainClass);
 
-                kickChatMember(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
+                kickChatMemberAndOrganizeKickedList(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
 
                 log.info("Silent user removed. First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
@@ -300,7 +300,7 @@ public class Bot extends TelegramLongPollingBot {
                             Main.newbieToSecondaryApprove.remove(chatId);
                         }
 
-                        kickChatMember(chatId, userId, currentDateTime, 3000000);
+                        kickChatMemberAndOrganizeKickedList(chatId, userId, currentDateTime, 3000000);
                     } else {
                         log.warn("User: " + userId + " from secondary check list is silent less then default value. Nothing to do yet. Timestamp difference is: " + (currentDateTime - userTimestamp));
                     }
@@ -311,7 +311,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void kickChatMember(long chatId, int userId, long currentDateTime, int untilDateInSeconds) {
+    public void kickChatMemberAndOrganizeKickedList(long chatId, int userId, long currentDateTime, int untilDateInSeconds) {
         KickChatMember kickChatMember = new KickChatMember();
         kickChatMember.setChatId(chatId)
                 .setUserId(userId)
@@ -319,8 +319,38 @@ public class Bot extends TelegramLongPollingBot {
 
         if(isUserInChat(chatId, userId)){
             try {
+
                 execute(kickChatMember);
                 log.info("User " + userId + " in chat id " + chatId + " was kicked");
+
+                if (Main.kickedUsers.containsKey(chatId)){
+                    Main.kickedUsers.get(chatId).put(userId, currentDateTime);
+                }
+                else {
+                    HashMap <Integer, Long> kickedUserMap = new HashMap(){{
+                        put(userId, currentDateTime);
+                    }};
+                    Main.kickedUsers.put(chatId, kickedUserMap);
+                    log.info("Kicked users map for chat is empty. Removing map. Chat id / User id: " + chatId + " " + userId);
+                }
+
+                if (Main.kickedUsers.containsKey(chatId)){
+                    if (Main.kickedUsers.get(chatId).size() == 0){
+                        Main.kickedUsers.remove(chatId);
+                    }
+                    log.info("Kicked users map for chat id is empty. Removing map. Chat id: " + chatId);
+                }
+
+                if (Main.kickedUsers.containsKey(chatId)){
+                    if (Main.kickedUsers.get(chatId).containsKey(userId)){
+                        long userKickedTime = Main.kickedUsers.get(chatId).get(userId);
+                        if((currentDateTime - userKickedTime) > Long.valueOf(SettingsForBotGlobal.userKickedTime.value)){
+                            Main.kickedUsers.get(chatId).remove(userId);
+                            log.info("User ID " + userId + " was removed from kicked users list of chat " + chatId);
+                        }
+                    }
+                }
+
             } catch (TelegramApiException e) {
                 log.info("Error while try to kick user " + userId + " in chat id " + chatId + " " + e.toString());
             }
@@ -430,7 +460,7 @@ public class Bot extends TelegramLongPollingBot {
 
             // DELETE FIRST WRONG MESSAGE FROM USER
             deleteMessage(chatId, messageId);
-            kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+            kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
             sendMessageToChatID(chatId, getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId));
 
         } else { // if message contains any text data - validate and remove from first silent list
@@ -481,7 +511,7 @@ public class Bot extends TelegramLongPollingBot {
 
                     // DELETE FIRST WRONG MESSAGE FROM USER
                     deleteMessage(chatId, messageId);
-                    kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+                    kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
                     String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
 
                     sendMessageToChatID(chatId, bannedTextMessage);
@@ -508,7 +538,7 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 }
 
-                kickChatMember(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
+                kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
                 sendReplyMessageToChatID(chatId, EnTexts.newbieAnswerContainsOnlyLetters.name(), messageId, true);
 
                 // DELETE FIRST WRONG MESSAGE FROM USER

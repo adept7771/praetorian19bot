@@ -20,6 +20,11 @@ public class Main {
     // interval after first approve. If it will not be done bot will kick this user from chat.
     // <Long - chatId, HashMap<Integer - userId, Long - joinTime >>
 
+    public static HashMap<Long, HashMap<Integer, Long>> kickedUsers = new HashMap<>();
+    // ^ list with kicked users. Bots can send several messages in one time, it can be avoid all checks
+    // this list stores them in memory for several minutes. And each message in chat will be checked if this message from
+    // kicked member. If it so - it must be removed. <Long - chatId, HashMap<Integer - userId, Long - joinTime >>
+
     public static Bot bot;
 
     static ChatSettingsHandler chatSettingsHandler = new ChatSettingsHandler();
