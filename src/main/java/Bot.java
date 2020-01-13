@@ -125,6 +125,23 @@ public class Bot extends TelegramLongPollingBot {
                 String messageText = currentUpdate.getMessage().getText();
                 int messageId = currentUpdate.getMessage().getMessageId();
 
+                // if user was already kicked check it, if timeinterval less then defined - delete all message from him
+                int fromUserId = 0;
+                try {
+                    fromUserId = currentUpdate.getMessage().getFrom().getId();
+                } catch (Exception e) {
+                    log.info("Error while trying extract userId in message! " + e);
+                }
+
+                if (Main.kickedUsers.containsKey(chatId)) {
+                    if (Main.kickedUsers.get(chatId).containsKey(fromUserId) && fromUserId != 0 &&
+                            Main.kickedUsers.get(chatId).get(fromUserId)
+                                    < Long.parseLong(SettingsForBotGlobal.userKickedTime.value)) {
+                        log.info("User was kicked from group, and try to send messages. Delete this message! User: " + fromUserId);
+                        deleteMessage(chatId, messageId);
+                    }
+                }
+
                 // is reply message contains bot name?
                 if (replyMessage != null) {
                     try {
@@ -317,34 +334,33 @@ public class Bot extends TelegramLongPollingBot {
                 .setUserId(userId)
                 .setUntilDate(((int) currentDateTime) + untilDateInSeconds);
 
-        if(isUserInChat(chatId, userId)){
+        if (isUserInChat(chatId, userId)) {
             try {
 
                 execute(kickChatMember);
                 log.info("User " + userId + " in chat id " + chatId + " was kicked");
 
-                if (Main.kickedUsers.containsKey(chatId)){
+                if (Main.kickedUsers.containsKey(chatId)) {
                     Main.kickedUsers.get(chatId).put(userId, currentDateTime);
-                }
-                else {
-                    HashMap <Integer, Long> kickedUserMap = new HashMap(){{
+                } else {
+                    HashMap<Integer, Long> kickedUserMap = new HashMap() {{
                         put(userId, currentDateTime);
                     }};
                     Main.kickedUsers.put(chatId, kickedUserMap);
                     log.info("Kicked users map for chat is empty. Removing map. Chat id / User id: " + chatId + " " + userId);
                 }
 
-                if (Main.kickedUsers.containsKey(chatId)){
-                    if (Main.kickedUsers.get(chatId).size() == 0){
+                if (Main.kickedUsers.containsKey(chatId)) {
+                    if (Main.kickedUsers.get(chatId).size() == 0) {
                         Main.kickedUsers.remove(chatId);
                     }
                     log.info("Kicked users map for chat id is empty. Removing map. Chat id: " + chatId);
                 }
 
-                if (Main.kickedUsers.containsKey(chatId)){
-                    if (Main.kickedUsers.get(chatId).containsKey(userId)){
+                if (Main.kickedUsers.containsKey(chatId)) {
+                    if (Main.kickedUsers.get(chatId).containsKey(userId)) {
                         long userKickedTime = Main.kickedUsers.get(chatId).get(userId);
-                        if((currentDateTime - userKickedTime) > Long.valueOf(SettingsForBotGlobal.userKickedTime.value)){
+                        if ((currentDateTime - userKickedTime) > Long.valueOf(SettingsForBotGlobal.userKickedTime.value)) {
                             Main.kickedUsers.get(chatId).remove(userId);
                             log.info("User ID " + userId + " was removed from kicked users list of chat " + chatId);
                         }
@@ -354,8 +370,7 @@ public class Bot extends TelegramLongPollingBot {
             } catch (TelegramApiException e) {
                 log.info("Error while try to kick user " + userId + " in chat id " + chatId + " " + e.toString());
             }
-        }
-        else {
+        } else {
             log.info("Can't kick user " + userId + " in chat id " + chatId + " because he is not in this chat!");
         }
     }
@@ -394,19 +409,17 @@ public class Bot extends TelegramLongPollingBot {
         getChatMember.setUserId(userId);
 
         ChatMember chatMember = new ChatMember();
-        try{
+        try {
             log.info("Try to check is userId " + userId + " is in chat: " + chatId);
             chatMember = execute(getChatMember);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.info("Error while trying to recognize userId " + userId + "  in chat: " + chatId + " return false by default");
             return false;
         }
-        if(chatMember.getStatus().equals("left") && chatMember.getStatus().equals("kicked")){
+        if (chatMember.getStatus().equals("left") && chatMember.getStatus().equals("kicked")) {
             log.info("userId " + userId + " is not in chat: " + chatId);
             return false;
-        }
-        else {
+        } else {
             log.info("userId " + userId + " is in chat: " + chatId);
             return true;
         }
@@ -662,11 +675,44 @@ public class Bot extends TelegramLongPollingBot {
                 log.info("User is not bot. Processing.");
 
                 int userId = user.getId();
+                long chatId = Bot.currentUpdate.getMessage().getChatId();
+
+                if (Main.kickedUsers.containsKey(chatId)) {
+                    if (Main.kickedUsers.get(chatId).containsKey(userId) && userId != 0 &&
+                            Main.kickedUsers.get(chatId).get(userId)
+                                    < Long.parseLong(SettingsForBotGlobal.userKickedTime.value)) {
+
+                        log.info("User was kicked from group, and try to join again. Kick him! User: " + userId);
+                        final long currentDateTime = (new Date().getTime()) / 1000;
+                        kickChatMemberAndOrganizeKickedList(chatId, currentUpdate.getMessage().getFrom().getId(), currentDateTime, 3000000);
+
+                        Main.newbieMapWithGeneratedAnswers.remove(userId);
+                        Main.newbieMapWithJoinTime.remove(userId);
+                        Main.newbieMapWithChatId.remove(userId);
+
+                        log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+
+                        if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
+                            if (Main.newbieToSecondaryApprove.get(chatId).containsKey(userId)) {
+                                Main.newbieToSecondaryApprove.get(chatId).remove(userId);
+                            }
+                            log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                            if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
+                                log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                                Main.newbieToSecondaryApprove.remove(chatId);
+                            }
+                        }
+
+                        String answerText = getTemplateTextForCurrentLanguage(EnTexts.kickedMemberJoinedInBanTime.name(), chatId);
+                        sendReplyMessageToChatID(chatId, answerText, currentUpdate.getMessage().getMessageId());
+
+                        continue;
+                    }
+                }
+
                 int randomDigit = ThreadLocalRandom.current().nextInt(1, 1001);
                 int randomDigit2 = ThreadLocalRandom.current().nextInt(1, 1001);
                 int answerDigit = randomDigit + randomDigit2;
-
-                long chatId = Bot.currentUpdate.getMessage().getChatId();
 
                 // put user to first check silent map
                 Main.newbieMapWithGeneratedAnswers.put(userId, answerDigit);

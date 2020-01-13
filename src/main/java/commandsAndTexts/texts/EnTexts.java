@@ -13,6 +13,7 @@ public enum EnTexts {
     changeDefaultLanguage(" Language successfully changed to "),
     optionSetSuccess(" Defined option was set successfully "),
     optionSetError(" Something going wrong while try to set option. Maybe you're not an admin or your command doesn't have a right format? "),
+    kickedMemberJoinedInBanTime(" User was kicked short time ago. He must wait until ban time end. "),
     ;
 
     public String value;
