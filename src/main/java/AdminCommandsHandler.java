@@ -73,8 +73,14 @@ public class AdminCommandsHandler {
     /* --------------------------------- COMMANDS HANDLING ------------------------------- */
 
     public static void recognizeAndHandleCommand(String incCommand, boolean isUpdatePersonalDirectMessage, long chatId, Update update) {
+        String command = null;
 
-        String command = incCommand.toLowerCase();
+        if(incCommand.toLowerCase().contains(CommandsEn.welcometext.name())){
+            command = incCommand;
+        }
+        else { // in lower case welcome text shows in chat not properly
+            command = incCommand.toLowerCase();
+        }
         incCommand = null;
         final String currentChatLanguage = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
 

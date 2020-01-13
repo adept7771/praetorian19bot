@@ -2,6 +2,8 @@ package commandsAndTexts.commands;
 
 public enum CommandsEn {
 
+    // adm command name is only for admins in chat. All other users cant use this command in chat
+
     help("Hi there! Look down to command list:"),
     start("The bot running 24/7 and already started for all users. Use /help command to get more help."),
     about("This bot created for auto moderate new group members for protect your chat from bots. " +

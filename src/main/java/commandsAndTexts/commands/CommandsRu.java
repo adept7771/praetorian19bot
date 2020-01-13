@@ -2,6 +2,8 @@ package commandsAndTexts.commands;
 
 public enum CommandsRu {
 
+    // adm command name is only for admins in chat. All other users cant use this command in chat
+
     help("Привет! Ознакомься со списком команд:"),
     start("Бот работает 24/7 и уже запущен для всех пользователей. Используй /help команду чтобы получить более подробную справку."),
     about("Этот бот создан для автомодерации чат групп и защиты вас от ботов. " +

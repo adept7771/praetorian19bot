@@ -76,7 +76,7 @@ class ChatSettingsHandler {
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
         if(Main.userSettingsInMemory.containsKey(chatId)){
             if(Main.userSettingsInMemory.get(chatId).containsKey(setupOption.toLowerCase())){
-                String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption.toLowerCase());
+                String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption);
                 log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId + " . Option value is: " + optionValue);
                 return optionValue;
             }
