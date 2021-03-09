@@ -17,9 +17,10 @@ class ChatSettingsHandler {
     public static void initialiseSettingsFromSettingsFileToMemory() {
 
         log.info("Initialising settings from settings file to memory of bot ");
-        log.info("Absolute path to working dir is: " + Main.absolutePath + " . Path contains jar name? Status: " + Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value));
+        log.info("Absolute path to working dir is: " + Main.absolutePath + " . Path contains jar name? Status: "
+                + Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value));
 
-        if(Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value)){
+        if (Main.absolutePath.contains(SettingsForBotGlobal.executableJarFileName.value)) {
             log.warn("Absolute path contains jar filename - it must be cut!");
             Main.absolutePath = Main.absolutePath.replace(SettingsForBotGlobal.executableJarFileName.value, "");
             log.warn("Final path to executable file is: " + Main.absolutePath);
@@ -33,12 +34,15 @@ class ChatSettingsHandler {
         long updateTime = (new Date().getTime()) / 1000;
 
         // try to store settings file option by option into memory
-        if (!listOfAllChatParametersFromSettingsFile.isEmpty() && !listOfAllChatParametersFromSettingsFile.get(0).equals(" ")) {
+        if (!listOfAllChatParametersFromSettingsFile.isEmpty() &&
+                !listOfAllChatParametersFromSettingsFile.get(0).equals(" ")) {
             // if setting file not empty we must parse in into map
 
-            log.info("List of parameters from settings file is not empty! Initialising in memory if it contains any options.");
+            log.info("List of parameters from settings file is not empty! " +
+                    "Initialising in memory if it contains any options.");
 
-            Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap(listOfAllChatParametersFromSettingsFile);
+            Main.userSettingsInMemory = parseSettingsArrayListInSettingsMap
+                    (listOfAllChatParametersFromSettingsFile);
 
             Main.lastMemorySettingsUpdateTime = updateTime;
             ChatSettingsHandler.lastSettingsFileUpdateTime = updateTime;
@@ -60,37 +64,39 @@ class ChatSettingsHandler {
         HashMap<String, String> optionsMap = new HashMap<>();
         optionsMap.put(setupOptionName, setupOptionValue);
 
-        if(Main.userSettingsInMemory.containsKey(chatId)){ // add options if var is not contains options for defined chat
+        if (Main.userSettingsInMemory.containsKey(chatId)) { // add options if var is not contains options for defined chat
             Main.userSettingsInMemory.get(chatId).put(setupOptionName, setupOptionValue);
-        }
-        else { // create new map entry with options if it not exists
+        } else { // create new map entry with options if it not exists
             Main.userSettingsInMemory.put(chatId, optionsMap);
         }
 
-        log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " + chatId + " was set into memory");
+        log.info("Setup option " + setupOptionName + " value: " + setupOptionValue + " for chat: " +
+                chatId + " was set into memory");
 
         Main.lastMemorySettingsUpdateTime = (new Date().getTime()) / 1000;
         log.info("Memory update time: " + Main.lastMemorySettingsUpdateTime);
     }
 
     static public String getSetupOptionValueFromMemory(String setupOption, long chatId) {
-        if(Main.userSettingsInMemory.containsKey(chatId)){
-            if(Main.userSettingsInMemory.get(chatId).containsKey(setupOption.toLowerCase())){
+        if (Main.userSettingsInMemory.containsKey(chatId)) {
+            if (Main.userSettingsInMemory.get(chatId).containsKey(setupOption.toLowerCase())) {
                 String optionValue = Main.userSettingsInMemory.get(chatId).get(setupOption);
-                log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId + " . Option value is: " + optionValue);
+                log.info("Recognizing setup option in memory " + setupOption + " for chat id: " + chatId
+                        + " . Option value is: " + optionValue);
                 return optionValue;
             }
-        }
-        else {
+        } else {
             log.info("There is no initialised setup option " + setupOption + " for chat: " + chatId + " in memory");
             return null;
         }
-        log.info("Error while trying to get option from memory (it could be not initialised) " + setupOption + " for chat: " + chatId + " return null for default");
+        log.info("Error while trying to get option from memory (it could be not initialised) " + setupOption
+                + " for chat: " + chatId + " return null for default");
         return null;
     }
 
     static String getLanguageOptionForChat(long chatId) {
-        String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultlanguageadm.toString(), chatId);
+        String languageOption = getSetupOptionValueFromMemory(CommandsEn.defaultlanguageadm.toString(),
+                chatId);
         if (languageOption == null) {
             return SettingsForBotGlobal.languageByDefault.value;
         } else {
@@ -98,7 +104,8 @@ class ChatSettingsHandler {
         }
     }
 
-    public boolean compareChatSettingOptionValueInMem(long chatID, String optionNameToCompare, String optionValueToCompare) {
+    public boolean compareChatSettingOptionValueInMem(long chatID, String optionNameToCompare,
+                                                      String optionValueToCompare) {
         try {
             return Main.userSettingsInMemory.get(chatID).get(optionNameToCompare).equals(optionValueToCompare);
         } catch (Exception e) {
@@ -110,7 +117,8 @@ class ChatSettingsHandler {
     /* -------------------------------- SETTINGS FILE HANDLING ------------------------------------ */
 
     public static boolean checkMemSettingsAndFileIsSyncedByUpdateTime() {
-        log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: " + ChatSettingsHandler.lastSettingsFileUpdateTime);
+        log.info("Last memory setting upd time: " + Main.lastMemorySettingsUpdateTime + " Last settings file upd time: "
+                + ChatSettingsHandler.lastSettingsFileUpdateTime);
         return Main.lastMemorySettingsUpdateTime == ChatSettingsHandler.lastSettingsFileUpdateTime;
     }
 
@@ -131,7 +139,8 @@ class ChatSettingsHandler {
         if (copyOfCurrentSettingsFileInMapView.size() > 0 && Main.userSettingsInMemory.size() > 0) {
             log.info("Settings in memory not empty, settings in file is not empty. Start comparing");
 
-            Iterator<Map.Entry<Long, HashMap<String, String>>> iterator = copyOfCurrentSettingsFileInMapView.entrySet().iterator();
+            Iterator<Map.Entry<Long, HashMap<String, String>>> iterator =
+                    copyOfCurrentSettingsFileInMapView.entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<Long, HashMap<String, String>> pair = iterator.next();
                 Long chatIDFromFile = pair.getKey();
@@ -158,7 +167,8 @@ class ChatSettingsHandler {
         return true;
     }
 
-    public static void storeSettingsMapToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithIncomingSettingsToStore, boolean rewriteOptionsIfExists) {
+    public static void storeSettingsMapToSettingsFile(HashMap<Long, HashMap<String, String>> mapWithIncomingSettingsToStore,
+                                                      boolean rewriteOptionsIfExists) {
         log.info("Trying to store settings into settings file.");
 
         // delete old settings file
@@ -166,7 +176,8 @@ class ChatSettingsHandler {
         if (oldSettingsFileToDelete.delete()) {
             log.info(oldSettingsFileToDelete.getName() + " is deleted! Try to create new one with new settings.");
         } else {
-            log.info("Delete operation for old settings file is failed. Something going wrong while trying to save setting to settings file.");
+            log.info("Delete operation for old settings file is failed. Something going wrong while trying to " +
+                    "save setting to settings file.");
         }
 
         writeMapWithSettingsToSettingsFile(mapWithIncomingSettingsToStore);
@@ -177,7 +188,8 @@ class ChatSettingsHandler {
             //FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
 
             Writer out = new BufferedWriter(new OutputStreamWriter(
-                    new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8));
+                    new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value),
+                    StandardCharsets.UTF_8));
 
             ArrayList<String> listOfDataToWrite = convertMapWithSettingsToList(mapWithSettingsToStore);
             StringBuilder stringDataToWrite = new StringBuilder();
@@ -240,7 +252,8 @@ class ChatSettingsHandler {
                 String data = " ";
                 //FileOutputStream out = new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value);
                 Writer out = new BufferedWriter(new OutputStreamWriter(
-                        new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8));
+                        new FileOutputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value),
+                        StandardCharsets.UTF_8));
                 //out.write(data.getBytes());
                 out.append(data);
                 out.flush();
@@ -252,7 +265,9 @@ class ChatSettingsHandler {
             try {
                 log.info("File with setting is found. Initialising it in MEMORY variable.");
 
-                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(Main.absolutePath + SettingsForBotGlobal.settingsFileName.value), StandardCharsets.UTF_8)));
+                BufferedReader fileReader = new BufferedReader((new InputStreamReader(new FileInputStream(
+                        Main.absolutePath + SettingsForBotGlobal.settingsFileName.value),
+                        StandardCharsets.UTF_8)));
 
                 while (fileReader.ready()) {
                     listOfParametersFromSettingsFile.add(fileReader.readLine());
@@ -279,7 +294,7 @@ class ChatSettingsHandler {
 
                 // get id of chat from string
                 int indexOfFirstComma = lineWithAllParams.indexOf(",");
-                long idOfChat = Long.valueOf(lineWithAllParams.substring(1, indexOfFirstComma -1 ));
+                long idOfChat = Long.valueOf(lineWithAllParams.substring(1, indexOfFirstComma - 1));
 
                 mapWithSettings.put(idOfChat, new HashMap<>());
                 int trimIndexFrom = 0, trimIndexTo = 0;
@@ -290,23 +305,23 @@ class ChatSettingsHandler {
 
                     String currentCharInLine = String.valueOf(lineWithAllParams.charAt(i));
 
-                    if(currentCharInLine.equals("\"")){
-                        if(trimIndexFrom == 0){
+                    if (currentCharInLine.equals("\"")) {
+                        if (trimIndexFrom == 0) {
                             trimIndexFrom = i;
                         }
-                        if (trimIndexFrom != 0 && trimIndexTo == 0 && i != trimIndexFrom){
+                        if (trimIndexFrom != 0 && trimIndexTo == 0 && i != trimIndexFrom) {
                             trimIndexTo = i;
                         }
-                        if(trimIndexFrom < trimIndexTo){
+                        if (trimIndexFrom < trimIndexTo) {
                             trimmedCommandLine = lineWithAllParams.substring(trimIndexFrom + 1, trimIndexTo);
                             trimIndexFrom = 0;
                             trimIndexTo = 0;
                         }
                     }
                     // trim chat option and value from string of format "chatOption=chatValue"
-                    if(!trimmedCommandLine.isEmpty()){
+                    if (!trimmedCommandLine.isEmpty()) {
                         final String chatOption = trimmedCommandLine.substring(0, trimmedCommandLine.indexOf("="));
-                        final String chatValue = trimmedCommandLine.substring(trimmedCommandLine.indexOf("=")+1);
+                        final String chatValue = trimmedCommandLine.substring(trimmedCommandLine.indexOf("=") + 1);
                         mapWithSettings.get(idOfChat).put(chatOption, chatValue);
                         trimmedCommandLine = "";
                     }

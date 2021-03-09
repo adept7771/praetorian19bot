@@ -9,15 +9,15 @@ public enum SettingsForBotGlobal {
     executableJarFileName("/praetorian19-1.0-jar-with-dependencies.jar"), // executable filename can be included in linux platforms in filepath
     // this can be produce errors
 
-    tokenForProduction("868108811:AAFEBVlByhnZhYs0heohMiN0bsqDM_nn6IM"), // token types
-    tokenForTest("976799861:AAGUy86YD4RHa7qXtyC9ncFyVpEoAr0XZR0"), //
+    tokenForProduction(""), // token types
+    tokenForTest(""), //
 
-    adminUserId("168171351"), //
+    adminUserId(""), //
 
     languageByDefault("En"), // En, Ru
 
-    nameForProduction("Praetorian19bot"), // names
-    nameForTest("praetorian19testbot"), //
+    nameForProduction(""), // names
+    nameForTest(""), //
     ;
 
     public String value;

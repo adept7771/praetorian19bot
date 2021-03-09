@@ -2,3 +2,8 @@
 /.idea
 /.idea/compiler.xml
 /log_file.log
+.idea
+.todo
+build
+video
+out

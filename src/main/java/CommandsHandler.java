@@ -9,7 +9,8 @@ public class CommandsHandler {
 
     private static final Logger log = Logger.getLogger(CommandsHandler.class);
 
-    public static void handleAllCommands(String messageText, long chatId, Integer messageId, boolean isUpdatePersonalDirectMessage, Update update) {
+    public static void handleAllCommands(String messageText, long chatId, Integer messageId,
+                                         boolean isUpdatePersonalDirectMessage, Update update) {
 
         String currentChatLanguage = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
 
@@ -74,11 +75,13 @@ public class CommandsHandler {
                         // handle command without options - show help text
                         log.info("Message text contains - command name: " + commandFromCommandsList.name());
                         helpText = commandFromCommandsList.value;
-                        Main.bot.sendReplyMessageToChatID(chatId, helpText, messageId); // sending help
+                        Main.bot.sendReplyMessageToChatID(chatId, helpText,
+                                messageId); // sending help
                         return;
                     }
                     if (messageText.toLowerCase().contains(commandFromCommandsList.name().toLowerCase())) {
-                        recognizeAndHandleCommand(messageText, isUpdatePersonalDirectMessage, chatId, update);
+                        recognizeAndHandleCommand(messageText,
+                                isUpdatePersonalDirectMessage, chatId, update);
                         return;
                     }
                 }
@@ -91,11 +94,13 @@ public class CommandsHandler {
                         // handle command without options - show help text
                         log.info("Message text contains - command name: " + commandFromCommandsList.name());
                         helpText = commandFromCommandsList.value;
-                        Main.bot.sendReplyMessageToChatID(chatId, helpText, messageId); // sending help
+                        Main.bot.sendReplyMessageToChatID(chatId, helpText,
+                                messageId); // sending help
                         return;
                     }
                     if (messageText.toLowerCase().contains(commandFromCommandsList.name().toLowerCase())) {
-                        recognizeAndHandleCommand(messageText, isUpdatePersonalDirectMessage, chatId, update);
+                        recognizeAndHandleCommand(messageText,
+                                isUpdatePersonalDirectMessage, chatId, update);
                         return;
                     }
                 }
@@ -141,7 +146,8 @@ public class CommandsHandler {
 
     /* --------------------------------- COMMANDS HANDLING ------------------------------- */
 
-    public static void recognizeAndHandleCommand(String incCommand, boolean isUpdatePersonalDirectMessage, long chatId, Update update) {
+    public static void recognizeAndHandleCommand(String incCommand, boolean isUpdatePersonalDirectMessage,
+                                                 long chatId, Update update) {
         String command = null;
 
         if (incCommand.toLowerCase().contains(CommandsEn.welcometext.name())) {
@@ -158,16 +164,20 @@ public class CommandsHandler {
                 // if user admin in chat
                 log.warn("Defining chat language option for chat: " + chatId);
                 if (command.contains("en")) {
-                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "En", chatId);
-                    Main.bot.sendMessageToChatID(chatId, EnTexts.changeDefaultLanguage.value + " English ");
+                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(),
+                            "En", chatId);
+                    Main.bot.sendMessageToChatID(chatId,
+                            EnTexts.changeDefaultLanguage.value + " English ");
                     return;
                 } else if (command.contains("ru")) {
-                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(), "Ru", chatId);
+                    ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.defaultlanguageadm.name(),
+                            "Ru", chatId);
                     Main.bot.sendMessageToChatID(chatId, RuTexts.changeDefaultLanguage.value + " Русский ");
                     return;
                 }
             } else { // if not an admin
-                Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name(), true);
+                Main.bot.sendMessageToChatID(chatId, EnTexts.adminCheckWrong.name(),
+                        true);
                 return;
             }
         }
@@ -179,20 +189,26 @@ public class CommandsHandler {
 
             if (command.length() > (CommandsEn.welcometext.name().length() + 300)) {
                 log.warn("Entered welcome text is longer then expected! For chat " + chatId);
-                Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetError.name(), true);
+                Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetError.name(),
+                        true);
             } else {
-                final String welcomeText = command.substring(CommandsEn.welcometext.name().length() + 1).replaceAll("\"", "'");
-                ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.welcometext.name(), welcomeText, chatId);
+                final String welcomeText = command.substring(CommandsEn.welcometext.name().length() + 1)
+                        .replaceAll("\"", "'");
+                ChatSettingsHandler.setSetupOptionValueInMemory(CommandsEn.welcometext.name(),
+                        welcomeText, chatId);
                 log.warn("Entered text is set! For chat " + chatId);
                 if (currentChatLanguage.contains("en")) {
-                    Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetSuccess.name(), true);
+                    Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetSuccess.name(),
+                            true);
                 } else {
-                    Main.bot.sendMessageToChatID(chatId, RuTexts.optionSetSuccess.name(), true);
+                    Main.bot.sendMessageToChatID(chatId, RuTexts.optionSetSuccess.name(),
+                            true);
                 }
             }
             return;
         } else {
-            Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetError.name(), true);
+            Main.bot.sendMessageToChatID(chatId, EnTexts.optionSetError.name(),
+                    true);
         }
     }
 }

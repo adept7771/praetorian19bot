@@ -42,7 +42,8 @@ public class Bot extends TelegramLongPollingBot {
 
         // kill old updates to prevent commands overloading
         if ((currentDateTime - update.getMessage().getDate()) > 90) {
-            log.info("Update is not actual and older then 90 seconds from now time. Ignoring update: " + update.getUpdateId());
+            log.info("Update is not actual and older then 90 seconds from now time. Ignoring update: "
+                    + update.getUpdateId());
             update = null;
             currentUpdate = null;
             System.gc();
@@ -74,7 +75,8 @@ public class Bot extends TelegramLongPollingBot {
 
         // periodic task which compare settings in memory and in settings file by update time
         if (!ChatSettingsHandler.checkMemSettingsAndFileIsSyncedByUpdateTime()) {
-            ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory, true);
+            ChatSettingsHandler.storeSettingsMapToSettingsFile(Main.userSettingsInMemory,
+                    true);
         }
 
         try { // if it reply message save it into variable
@@ -103,15 +105,19 @@ public class Bot extends TelegramLongPollingBot {
                     + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
             firstCheckAndRemoveSilentUsers(currentDateTime);
             if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
-                log.info("Newbie second check list size for current chat ID: " + chatId + " is: " + Main.newbieToSecondaryApprove.get(chatId).size());
+                log.info("Newbie second check list size for current chat ID: " + chatId + " is: "
+                        + Main.newbieToSecondaryApprove.get(chatId).size());
             }
-            secondaryCheckValidateAndRemoveSilentUsers(currentDateTime); // second periodic task to clean silent users
+            secondaryCheckValidateAndRemoveSilentUsers(currentDateTime);
+            // second periodic task to clean silent users
         } else {
             log.info("Current newbie first check lists is empty.");
             if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
-                log.info("Newbie second check list size for current chat ID: " + chatId + " is: " + Main.newbieToSecondaryApprove.get(chatId).size());
+                log.info("Newbie second check list size for current chat ID: " + chatId + " is: "
+                        + Main.newbieToSecondaryApprove.get(chatId).size());
             }
-            secondaryCheckValidateAndRemoveSilentUsers(currentDateTime); // second periodic task to clean silent users
+            secondaryCheckValidateAndRemoveSilentUsers(currentDateTime);
+            // second periodic task to clean silent users
         }
 
         // NEW MEMBERS update handling with attention message: -------------------------------->
@@ -145,8 +151,10 @@ public class Bot extends TelegramLongPollingBot {
                 // is reply message contains bot name?
                 if (replyMessage != null) {
                     try {
-                        log.info("Reply message contains name: " + currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName());
-                        replyMessageInChatContainsBotName = currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName().equals(getBotUsername());
+                        log.info("Reply message contains name: "
+                                + currentUpdate.getMessage().getReplyToMessage().getFrom().getUserName());
+                        replyMessageInChatContainsBotName = currentUpdate.getMessage().getReplyToMessage().getFrom()
+                                .getUserName().equals(getBotUsername());
                     } catch (Exception e) {
                         replyMessageInChatContainsBotName = false;
                     } finally {
@@ -182,20 +190,25 @@ public class Bot extends TelegramLongPollingBot {
 
                     // COMMANDS HANDLING -------------------------------->
                     if (messageText != null && messageText.contains("/")) {
-                        CommandsHandler.handleAllCommands(messageText, chatId, messageId, isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
+                        CommandsHandler.handleAllCommands(messageText, chatId, messageId,
+                                isUpdateContainsPersonalPublicMessageToBot, currentUpdate);
                         return;
                     }
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
-                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId, messageId, currentDateTime);
+                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId())
+                            /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
+                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId,
+                                messageId, currentDateTime);
                         return;
                     }
                 } else { // no mentions of bot or personal public messages to him
 
                     // Check if user send CODE to unblock IN CHAT and if user is in newbie block list ---------------------->
-                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId()) /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
-                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId, messageId, currentDateTime);
+                    if (Main.newbieMapWithGeneratedAnswers.containsKey(currentUpdate.getMessage().getFrom().getId())
+                            /* if user in newbie list */ && !isUpdateContainsPersonalPublicMessageToBot) {
+                        validateNewbieAnswer(currentUpdate, messageText, pattern, chatId,
+                                messageId, currentDateTime);
                     }
                 }
 
@@ -215,13 +228,15 @@ public class Bot extends TelegramLongPollingBot {
 
         log.info("Iterating first newbie lists.");
 
-        for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>) Main.newbieMapWithGeneratedAnswers.entrySet()) {
+        for (Map.Entry<Integer, Integer> pair : (Iterable<Map.Entry<Integer, Integer>>)
+                Main.newbieMapWithGeneratedAnswers.entrySet()) {
 
             Integer userIdFromMainClass = pair.getKey();
             Long joinTimeFromMainClass = Main.newbieMapWithJoinTime.get(userIdFromMainClass);
             Long chatIdFromMainClass = Main.newbieMapWithChatId.get(userIdFromMainClass);
 
-            log.info("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMainClass + " || Difference: " + (currentDateTime - joinTimeFromMainClass));
+            log.info("Current date time: " + currentDateTime + " || Join member datetime: " + joinTimeFromMainClass
+                    + " || Difference: " + (currentDateTime - joinTimeFromMainClass));
 
             if ((currentDateTime - joinTimeFromMainClass) > Long.valueOf(SettingsForBotGlobal.approveFirstlyTime.value)) {
 
@@ -231,9 +246,11 @@ public class Bot extends TelegramLongPollingBot {
                 Main.newbieMapWithJoinTime.remove(userIdFromMainClass);
                 Main.newbieMapWithChatId.remove(userIdFromMainClass);
 
-                kickChatMemberAndOrganizeKickedList(chatIdFromMainClass, userIdFromMainClass, currentDateTime, 3000000);
+                kickChatMemberAndOrganizeKickedList(chatIdFromMainClass, userIdFromMainClass,
+                        currentDateTime, 3000000);
 
-                log.info("Silent user removed. First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                log.info("Silent user removed. First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size()
+                        + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                 if (Main.newbieToSecondaryApprove.containsKey(chatIdFromMainClass)) {
                     if (Main.newbieToSecondaryApprove.get(chatIdFromMainClass).containsKey(userIdFromMainClass)) {
@@ -246,7 +263,8 @@ public class Bot extends TelegramLongPollingBot {
                     }
                 }
 
-                String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatIdFromMainClass);
+                String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(),
+                        chatIdFromMainClass);
                 sendMessageToChatID(chatIdFromMainClass, textToSay);
             }
         }
@@ -262,7 +280,8 @@ public class Bot extends TelegramLongPollingBot {
         }
 
         if (Main.newbieMapWithJoinTime.containsKey(userIdFromUpdate)) {
-            log.warn("User " + userIdFromUpdate + " is author of message and still in first silent list, cancel full secondary silent list check");
+            log.warn("User " + userIdFromUpdate + " is author of message and still in first silent list, cancel full " +
+                    "secondary silent list check");
             return;
         }
 
@@ -289,13 +308,16 @@ public class Bot extends TelegramLongPollingBot {
                     if (userIdFromUpdate == userId && (currentDateTime - userTimestamp) <
                             Long.valueOf(SettingsForBotGlobal.approveSecondaryTime.value)) {
 
-                        log.warn("User sent message in enough time interval, removing from secondary check list. Chat id: " + chatId + " userId: " + userId);
+                        log.warn("User sent message in enough time interval, removing from secondary check list. Chat id: "
+                                + chatId + " userId: " + userId);
 
                         Main.newbieToSecondaryApprove.get(chatId).remove(userId);
-                        log.warn("Secondary silent users list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                        log.warn("Secondary silent users list size for chat: " + chatId + " is "
+                                + Main.newbieToSecondaryApprove.get(chatId).size());
 
                         if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                            log.warn("List of secondary check for silent users is empty, deleting it. Chat id: " + chatId);
+                            log.warn("List of secondary check for silent users is empty, deleting it. Chat id: "
+                                    + chatId);
                             Main.newbieToSecondaryApprove.remove(chatId);
                         }
                         return;
@@ -305,11 +327,13 @@ public class Bot extends TelegramLongPollingBot {
                     if ((currentDateTime - userTimestamp) >
                             Long.valueOf(SettingsForBotGlobal.approveSecondaryTime.value)) {
 
-                        final String textToSay = getTemplateTextForCurrentLanguage(EnTexts.removedSilentUser.name(), chatId);
+                        final String textToSay = getTemplateTextForCurrentLanguage
+                                (EnTexts.removedSilentUser.name(), chatId);
                         sendMessageToChatID(chatId, textToSay);
 
                         log.warn("User: " + userId + " was removed after long delay from chat and secondary check list for silent users");
-                        log.warn("Secondary silent users list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                        log.warn("Secondary silent users list size for chat: " + chatId + " is "
+                                + Main.newbieToSecondaryApprove.get(chatId).size());
 
                         Main.newbieToSecondaryApprove.get(chatId).remove(userId);
                         if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
@@ -317,9 +341,11 @@ public class Bot extends TelegramLongPollingBot {
                             Main.newbieToSecondaryApprove.remove(chatId);
                         }
 
-                        kickChatMemberAndOrganizeKickedList(chatId, userId, currentDateTime, 3000000);
+                        kickChatMemberAndOrganizeKickedList(chatId, userId, currentDateTime,
+                                3000000);
                     } else {
-                        log.warn("User: " + userId + " from secondary check list is silent less then default value. Nothing to do yet. Timestamp difference is: " + (currentDateTime - userTimestamp));
+                        log.warn("User: " + userId + " from secondary check list is silent less then default value. " +
+                                "Nothing to do yet. Timestamp difference is: " + (currentDateTime - userTimestamp));
                     }
                 }
             } else {
@@ -455,26 +481,32 @@ public class Bot extends TelegramLongPollingBot {
             Main.newbieMapWithJoinTime.remove(newbieId);
             Main.newbieMapWithChatId.remove(newbieId);
 
-            log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+            log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                    + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
             if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
                 if (Main.newbieToSecondaryApprove.get(chatId).containsKey(newbieId)) {
                     Main.newbieToSecondaryApprove.get(chatId).remove(newbieId);
                 }
-                log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                log.info("Secondary approve list size for chat: " + chatId + " is " +
+                        Main.newbieToSecondaryApprove.get(chatId).size());
                 if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                    log.info("Secondary approve list size for chat: " + chatId + " is " +
+                            Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
                     Main.newbieToSecondaryApprove.remove(chatId);
                 }
             }
 
-            answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
+            answerText += getTemplateTextForCurrentLanguage
+                    (EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
             sendReplyMessageToChatID(chatId, answerText, messageId);
 
             // DELETE FIRST WRONG MESSAGE FROM USER
             deleteMessage(chatId, messageId);
-            kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-            sendMessageToChatID(chatId, getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId));
+            kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(),
+                    currentDateTime, 3000000);
+            sendMessageToChatID(chatId, getTemplateTextForCurrentLanguage
+                    (EnTexts.spammerBanned.name(), chatId));
 
         } else { // if message contains any text data - validate and remove from first silent list
 
@@ -493,9 +525,11 @@ public class Bot extends TelegramLongPollingBot {
                     Main.newbieMapWithJoinTime.remove(newbieId);
                     Main.newbieMapWithChatId.remove(newbieId);
 
-                    log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                    log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                            + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
-                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(), chatId);
+                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieCheckSuccess.name(),
+                            chatId);
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
@@ -505,27 +539,33 @@ public class Bot extends TelegramLongPollingBot {
                     Main.newbieMapWithJoinTime.remove(newbieId);
                     Main.newbieMapWithChatId.remove(newbieId);
 
-                    log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                    log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                            + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                     if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
                         if (Main.newbieToSecondaryApprove.get(chatId).containsKey(newbieId)) {
                             Main.newbieToSecondaryApprove.get(chatId).remove(newbieId);
                         }
-                        log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                        log.info("Secondary approve list size for chat: " + chatId + " is "
+                                + Main.newbieToSecondaryApprove.get(chatId).size());
                         if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                            log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                            log.info("Secondary approve list size for chat: " + chatId + " is "
+                                    + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
                             Main.newbieToSecondaryApprove.remove(chatId);
                         }
                     }
 
-                    answerText += getTemplateTextForCurrentLanguage(EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
+                    answerText += getTemplateTextForCurrentLanguage(
+                            EnTexts.newbieAnswerNotEqualsToGeneratedOne.name(), chatId);
 
                     sendReplyMessageToChatID(chatId, answerText, messageId);
 
                     // DELETE FIRST WRONG MESSAGE FROM USER
                     deleteMessage(chatId, messageId);
-                    kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                    String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
+                    kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(),
+                            currentDateTime, 3000000);
+                    String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(),
+                            chatId);
 
                     sendMessageToChatID(chatId, bannedTextMessage);
                 }
@@ -538,24 +578,30 @@ public class Bot extends TelegramLongPollingBot {
                 Main.newbieMapWithJoinTime.remove(userId);
                 Main.newbieMapWithChatId.remove(userId);
 
-                log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                        + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                 if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
                     if (Main.newbieToSecondaryApprove.get(chatId).containsKey(newbieId)) {
                         Main.newbieToSecondaryApprove.get(chatId).remove(newbieId);
                     }
-                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                    log.info("Secondary approve list size for chat: " + chatId + " is "
+                            + Main.newbieToSecondaryApprove.get(chatId).size());
                     if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                        log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                        log.info("Secondary approve list size for chat: " + chatId + " is "
+                                + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
                         Main.newbieToSecondaryApprove.remove(chatId);
                     }
                 }
 
-                kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(), currentDateTime, 3000000);
-                sendReplyMessageToChatID(chatId, EnTexts.newbieAnswerContainsOnlyLetters.name(), messageId, true);
+                kickChatMemberAndOrganizeKickedList(chatId, update.getMessage().getFrom().getId(),
+                        currentDateTime, 3000000);
+                sendReplyMessageToChatID(chatId, EnTexts.newbieAnswerContainsOnlyLetters.name(),
+                        messageId, true);
 
                 // DELETE FIRST WRONG MESSAGE FROM USER
-                String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(), chatId);
+                String bannedTextMessage = getTemplateTextForCurrentLanguage(EnTexts.spammerBanned.name(),
+                        chatId);
                 deleteMessageAndSayText(chatId, messageId, bannedTextMessage);
             }
         }
@@ -577,7 +623,8 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public void sendMessageToChatID(long chatId, String messageText) {
-        sendMessageToChatID(chatId, messageText, null);
+        sendMessageToChatID(chatId,
+                messageText, null);
     }
 
     /*
@@ -628,16 +675,20 @@ public class Bot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            log.info("Error while trying to answer in chatId " + chatId + " to message " + replyToMessageId + " " + e.toString());
+            log.info("Error while trying to answer in chatId " + chatId + " to message " + replyToMessageId
+                    + " " + e.toString());
         }
     }
 
-    public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId, boolean messageTextIsTemplateText) {
+    public void sendReplyMessageToChatID(long chatId, String messageText, int replyToMessageId,
+                                         boolean messageTextIsTemplateText) {
         String language = ChatSettingsHandler.getLanguageOptionForChat(chatId).toLowerCase();
         if (language.contains("ru") && messageTextIsTemplateText) {
-            sendReplyMessageToChatID(chatId, RuTexts.getValueForKey(messageText), replyToMessageId);
+            sendReplyMessageToChatID(chatId, RuTexts.getValueForKey(messageText),
+                    replyToMessageId);
         } else if (language.contains("en") && messageTextIsTemplateText) {
-            sendReplyMessageToChatID(chatId, EnTexts.getValueForKey(messageText), replyToMessageId);
+            sendReplyMessageToChatID(chatId, EnTexts.getValueForKey(messageText),
+                    replyToMessageId);
         } else {
             sendReplyMessageToChatID(chatId, messageText, replyToMessageId);
         }
@@ -648,7 +699,8 @@ public class Bot extends TelegramLongPollingBot {
             Main.newbieMapWithGeneratedAnswers.remove(leftUserId);
             Main.newbieMapWithJoinTime.remove(leftUserId);
             Main.newbieMapWithChatId.remove(leftUserId);
-            log.info("Silent user: " + leftUserId + " left or was removed from group. It should be deleted from all lists. Removing from first list.");
+            log.info("Silent user: " + leftUserId + " left or was removed from group. " +
+                    "It should be deleted from all lists. Removing from first list.");
             log.info("First newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
                     + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
         }
@@ -658,7 +710,8 @@ public class Bot extends TelegramLongPollingBot {
                 log.info("Removing user: " + leftUserId + " from second list");
                 Main.newbieToSecondaryApprove.get(chatId).remove(leftUserId);
                 if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                    log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                    log.info("Secondary approve list size for chat: " + chatId + " is " +
+                            Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
                     Main.newbieToSecondaryApprove.remove(chatId);
                 }
                 log.info("Secondary newbie list size: " + Main.newbieToSecondaryApprove.size());
@@ -684,21 +737,26 @@ public class Bot extends TelegramLongPollingBot {
 
                         log.info("User was kicked from group, and try to join again. Kick him! User: " + userId);
                         final long currentDateTime = (new Date().getTime()) / 1000;
-                        kickChatMemberAndOrganizeKickedList(chatId, currentUpdate.getMessage().getFrom().getId(), currentDateTime, 3000000);
+                        kickChatMemberAndOrganizeKickedList(chatId,
+                                currentUpdate.getMessage().getFrom().getId(), currentDateTime,
+                                3000000);
 
                         Main.newbieMapWithGeneratedAnswers.remove(userId);
                         Main.newbieMapWithJoinTime.remove(userId);
                         Main.newbieMapWithChatId.remove(userId);
 
-                        log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                        log.info("Newbie list size: " + Main.newbieMapWithGeneratedAnswers.size() + " "
+                                + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
 
                         if (Main.newbieToSecondaryApprove.containsKey(chatId)) {
                             if (Main.newbieToSecondaryApprove.get(chatId).containsKey(userId)) {
                                 Main.newbieToSecondaryApprove.get(chatId).remove(userId);
                             }
-                            log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                            log.info("Secondary approve list size for chat: " + chatId + " is "
+                                    + Main.newbieToSecondaryApprove.get(chatId).size());
                             if (Main.newbieToSecondaryApprove.get(chatId).size() == 0) {
-                                log.info("Secondary approve list size for chat: " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
+                                log.info("Secondary approve list size for chat: " + chatId + " is "
+                                        + Main.newbieToSecondaryApprove.get(chatId).size() + " removing map from memory");
                                 Main.newbieToSecondaryApprove.remove(chatId);
                             }
                         }
@@ -730,19 +788,24 @@ public class Bot extends TelegramLongPollingBot {
                     }});
                 }
 
-                log.info("Newbie first lists size: " + Main.newbieMapWithGeneratedAnswers.size() + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
-                log.info("Secondary user approve list size for chat " + chatId + " is " + Main.newbieToSecondaryApprove.get(chatId).size());
+                log.info("Newbie first lists size: " + Main.newbieMapWithGeneratedAnswers.size()
+                        + " " + Main.newbieMapWithJoinTime.size() + " " + Main.newbieMapWithChatId.size());
+                log.info("Secondary user approve list size for chat " + chatId + " is "
+                        + Main.newbieToSecondaryApprove.get(chatId).size());
 
                 // Send warning greetings message with generated digits
                 String warningMessage = "";
 
                 // if greeting message defined by user get it from memory
-                String setupOptionFromMemory = ChatSettingsHandler.getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId);
+                String setupOptionFromMemory = ChatSettingsHandler
+                        .getSetupOptionValueFromMemory(CommandsEn.welcometext.name(), chatId);
                 if (setupOptionFromMemory != null) {
                     warningMessage = setupOptionFromMemory;
-                    warningMessage += getTemplateTextForCurrentLanguage(EnTexts.halfGreetings.name(), chatId);
+                    warningMessage += getTemplateTextForCurrentLanguage(EnTexts.halfGreetings.name(),
+                            chatId);
                 } else { // if greetings message not defined get default greetings
-                    warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(), chatId);
+                    warningMessage = getTemplateTextForCurrentLanguage(EnTexts.defaultGreetings.name(),
+                            chatId);
                 }
 
                 String userName = user.getUserName();
@@ -750,9 +813,11 @@ public class Bot extends TelegramLongPollingBot {
 
                 if (userName == null) {
                     sendMessageToChatID(chatId, warningMessage + " " +
-                                    NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat, true)
+                                    NumberWordConverter.convert(randomDigit, chatLanguageOptionForChat,
+                                            true)
                                     + " + "
-                                    + NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat, true)
+                                    + NumberWordConverter.convert(randomDigit2, chatLanguageOptionForChat,
+                            true)
                             , user);
                 } else {
                     userName = "@" + userName;

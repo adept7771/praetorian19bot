@@ -52,7 +52,8 @@ public class NumberWordConverter {
 //            }
 
             if (n < 0) {
-                return maskLetters("minus " + convert(-n, language, letterMasking), letterMasking);
+                return maskLetters("minus " + convert(-n, language, letterMasking),
+                        letterMasking);
             }
 
             if (n < 20) {
@@ -60,22 +61,29 @@ public class NumberWordConverter {
             }
 
             if (n < 100) {
-                return maskLetters(tensEn[n / 10] + ((n % 10 != 0) ? " " : "") + unitsEn[n % 10], letterMasking);
+                return maskLetters(tensEn[n / 10] + ((n % 10 != 0) ? " " : "") + unitsEn[n % 10],
+                        letterMasking);
             }
 
             if (n < 1000) {
-                return maskLetters(unitsEn[n / 100] + " hundred" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
+                return maskLetters(unitsEn[n / 100] + " hundred" + ((n % 100 != 0) ? " " : "")
+                        + convert(n % 100, language, false), letterMasking);
             }
 
             if (n < 1000000) {
-                return maskLetters(convert(n / 1000, language, letterMasking) + " thousand" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language, false), letterMasking);
+                return maskLetters(convert(n / 1000, language, letterMasking)
+                        + " thousand" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language, false), letterMasking);
             }
 
             if (n < 1000000000) {
-                return maskLetters(convert(n / 1000000, language, letterMasking) + " million" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language, false), letterMasking);
+                return maskLetters(convert(n / 1000000, language, letterMasking)
+                        + " million" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language,
+                        false), letterMasking);
             }
 
-            return maskLetters(convert(n / 1000000000, language, letterMasking) + " billion" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, false), letterMasking);
+            return maskLetters(convert(n / 1000000000, language, letterMasking)
+                    + " billion" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language,
+                    false), letterMasking);
 
         } else if (language.toLowerCase().contains("ru")) {
 //            if (n == 0) {
@@ -83,7 +91,8 @@ public class NumberWordConverter {
 //            }
 
             if (n < 0) {
-                return maskLetters("minus " + convert(-n, language, letterMasking), letterMasking);
+                return maskLetters("minus " + convert(-n, language, letterMasking),
+                        letterMasking);
             }
 
             if (n < 20) {
@@ -91,34 +100,46 @@ public class NumberWordConverter {
             }
 
             if (n < 100) {
-                return maskLetters(tensRu[n / 10] + ((n % 10 != 0) ? " " : "") + unitsRu[n % 10], letterMasking);
+                return maskLetters(tensRu[n / 10] + ((n % 10 != 0) ? " " : "") + unitsRu[n % 10],
+                        letterMasking);
             }
 
             if (n < 1000) {
                 if (n >= 100 && n < 200) {
-                    return maskLetters(("сто" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false)), letterMasking);
+                    return maskLetters(("сто" + ((n % 100 != 0) ? " " : "") + convert(n % 100,
+                            language, false)), letterMasking);
                 }
                 if (n >= 200 && n < 300) {
-                    return maskLetters("двести" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
+                    return maskLetters("двести" + ((n % 100 != 0) ? " " : "") + convert(n % 100,
+                            language, false), letterMasking);
                 }
                 if (n >= 300 && n < 400) {
-                    return maskLetters("триста" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
+                    return maskLetters("триста" + ((n % 100 != 0) ? " " : "") + convert(n % 100,
+                            language, false), letterMasking);
                 }
                 if (n >= 400 && n < 500) {
-                    return maskLetters("четыреста" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
+                    return maskLetters("четыреста" + ((n % 100 != 0) ? " " : "") + convert(n % 100,
+                            language, false), letterMasking);
                 }
-                return maskLetters(unitsRu[n / 100] + "сот" + ((n % 100 != 0) ? " " : "") + convert(n % 100, language, false), letterMasking);
+                return maskLetters(unitsRu[n / 100] + "сот" + ((n % 100 != 0) ? " " : "")
+                        + convert(n % 100, language, false), letterMasking);
             }
 
             if (n < 1000000) {
-                return maskLetters(convert(n / 1000, language, letterMasking) + " тысяч" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language, letterMasking), letterMasking);
+                return maskLetters(convert(n / 1000, language, letterMasking)
+                        + " тысяч" + ((n % 1000 != 0) ? " " : "") + convert(n % 1000, language,
+                        letterMasking), letterMasking);
             }
 
             if (n < 1000000000) {
-                return maskLetters(convert(n / 1000000, language, letterMasking) + " миллионов" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language, letterMasking), letterMasking);
+                return maskLetters(convert(n / 1000000, language, letterMasking)
+                        + " миллионов" + ((n % 1000000 != 0) ? " " : "") + convert(n % 1000000, language,
+                        letterMasking), letterMasking);
             }
 
-            return maskLetters(convert(n / 1000000000, language, letterMasking) + " биллионов" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language, letterMasking), letterMasking);
+            return maskLetters(convert(n / 1000000000, language, letterMasking)
+                    + " биллионов" + ((n % 1000000000 != 0) ? " " : "") + convert(n % 1000000000, language,
+                    letterMasking), letterMasking);
 
         }
         log.info("Error while trying to convert entered digital to letters.");
